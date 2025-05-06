@@ -1,11 +1,12 @@
 pipeline{
     agent any
     stages {
-        stage('Checkout') {
+        stage('Checkout SourceCode') {
             steps {
-                git 'https://github.com/NandaNara/test-MEL.git'
+                checkout scm
             }
         }
+        
         stage('Build') {
             steps {
                 echo 'Building...'
