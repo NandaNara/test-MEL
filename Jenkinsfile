@@ -16,6 +16,8 @@ pipeline{
             steps {
                 echo 'Sonar Scanning...'
             }
+        }
+        
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
             steps {
