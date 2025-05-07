@@ -1,9 +1,10 @@
 pipeline{
     agent any
     stages {
-        stage('Build') {
+        // --- CODE STAGE ---
+        stage('Check Secrets - TruffleHog') {
             steps {
-                echo 'Building...'
+                echo 'TruffleHog Scanning...'
                 // Add your build steps here
                 script {
                     // Example of a shell command
@@ -11,9 +12,32 @@ pipeline{
                 }
             }
         }
-        stage('Test') {
+        stage('SAST - SonarQube'){
             steps {
-                echo 'Testing...'
+                echo 'Sonar Scanning...'
+            }
+        // --- BUILD STAGE ---
+        stage('Dockerfile Lint - Hadolint') {
+            steps {
+                echo 'Hadolint scanning...'
+                // Add your test steps here
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Image...'
+                // Add your test steps here
+            }
+        }
+        stage('Image Hardening - Dockle') {
+            steps {
+                echo 'Dockle scanning...'
+                // Add your test steps here
+            }
+        }
+        stage('Vuln Scan  - Trivy') {
+            steps {
+                echo 'Dockle scanning...'
                 // Add your test steps here
             }
         }
