@@ -37,7 +37,7 @@ pipeline{
         }
         stage('Vuln Scan  - Trivy') {
             steps {
-                echo 'Dockle scanning...'
+                echo 'Tri scanning...'
                 // Add your test steps here
             }
         }
@@ -65,3 +65,4 @@ pipeline{
         // disableConcurrentBuilds() // Prevent concurrent builds of this pipeline
     }
 }
+    
