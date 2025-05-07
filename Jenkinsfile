@@ -43,9 +43,9 @@ pipeline{
                 // Add your test steps here
             }
         }
-        stage('Deploy') {
+        stage('Push Image to Registry') {
             steps {
-                echo 'Deploying...'
+                echo 'Pushing Image to Registry...'
                 // Add your deployment steps here
             }
         }
