@@ -5,8 +5,14 @@ pipeline{
         stage('Check Secrets - TruffleHog') {
             steps {
                 echo 'Scanning Secret using TruffleHog...'
-                sh 'docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt'
-                sh 'cat trufflehog.txt'
+                scripts {
+                    sh """
+                        docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                        cat trufflehog.txt
+                    """
+                }
+                //sh 'docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt'
+                //sh 'cat trufflehog.txt'
             }
         }
         stage('SAST - SonarQube'){
