@@ -1,7 +1,16 @@
 pipeline{
     agent any
+    
     stages {
-        // --- CODE STAGE ---
+        // ======= CODE STAGE =======
+        stage('Secrets Scan - GitLeaks'){
+            steps{
+                echo 'Running GitLeaks...'
+                sh """
+                    
+                """
+            }
+        }
         stage('Check Secrets - TruffleHog') {
             steps {
                 echo 'Scanning Secret using TruffleHog...'
