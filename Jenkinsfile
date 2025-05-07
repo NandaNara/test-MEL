@@ -4,11 +4,10 @@ pipeline{
         // --- CODE STAGE ---
         stage('Check Secrets - TruffleHog') {
             steps {
-                echo 'TruffleHog Scanning...'
-                // Add your build steps here
+                echo 'Scanning Secret using TruffleHog...'
                 script {
-                    // Example of a shell command
-                    sh 'echo "Building the project..."'
+                    sh 'docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt'
+                    sh 'cat trufflehog.txt'
                 }
             }
         }
