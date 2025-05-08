@@ -12,7 +12,7 @@ pipeline{
         //             sh """
         //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
         //                 cat trufflehog.txt
-        //             """   
+        //             """
         //         }
         //     }
         // }
@@ -28,7 +28,7 @@ pipeline{
                 }
             }
         }
-        
+
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
             steps {
