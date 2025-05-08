@@ -6,11 +6,11 @@ pipeline{
         stage('Secret Scan - TruffleHog') {
             steps {
                 echo 'Scanning secret using TruffleHog... '
-                script {
+                catchError(stageResult: 'FAILURE'){
                     sh """
                         docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
                         cat trufflehog.txt
-                    """
+                    """   
                 }
             }
         }
