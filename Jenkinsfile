@@ -17,6 +17,13 @@ pipeline{
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
+                catchError(stageResult: 'FAILURE') {
+                    withSonarQubeEnv('sonar') {
+                        sh """
+                            sonar-scanner -Dsonar.projectKey=test-MEL -Dsonar.sources=.
+                        """
+                    }
+                }
             }
         }
         
