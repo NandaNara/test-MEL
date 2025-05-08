@@ -1,6 +1,8 @@
 pipeline{
     agent any
-    
+    tools {
+        maven 'Maven'
+    }
     stages {
         // ======= CODE STAGE =======
         stage('Secret Scan - TruffleHog') {
@@ -20,7 +22,8 @@ pipeline{
                 catchError(stageResult: 'FAILURE') {
                     withSonarQubeEnv('sonar') {
                         sh """
-                            sonar-scanner -Dsonar.projectKey=test-MEL -Dsonar.sources=.
+                            mvn clean package
+                            mvn mvn sonar:sonar -Dsonar.url=http://http://10.10.10.62:9001/ -Dsonar.projectKey=test-MEL -Dsonarsources=.
                         """
                     }
                 }
