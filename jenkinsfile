@@ -1,25 +1,62 @@
 pipeline{
     agent any
+    tools {
+        maven 'maven'
+    }
     stages {
-        stage('Build') {
+        // ======= CODE STAGE =======
+        // stage('Secret Scan - TruffleHog') {
+        //     steps {
+        //         echo 'Scanning secret using TruffleHog... '
+        //         catchError(stageResult: 'FAILURE'){
+        //             sh """
+        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+        //                 cat trufflehog.txt
+        //             """   
+        //         }
+        //     }
+        // }
+        stage('SAST - SonarQube'){
             steps {
-                echo 'Building...'
-                // Add your build steps here
-                script {
-                    // Example of a shell command
-                    sh 'echo "Building the project..."'
+                echo 'Sonar Scanning...'
+                catchError(stageResult: 'FAILURE') {
+                    withSonarQubeEnv('sonar') {
+                        sh """
+                            sonar-scanner -Dsonar.projectKey=test-MEL -Dsonar.sources=. -Dsonar.host.url=http://10.10.10.62:9001 -Dsonar.login=sqp_2c8ff8e9ae35d502abeca661c315f7d01de62dc5
+                        """
+                    }
                 }
             }
         }
-        stage('Test') {
+        
+        // --- BUILD STAGE ---
+        stage('Dockerfile Lint - Hadolint') {
             steps {
-                echo 'Testing...'
+                echo 'Hadolint scanning...'
                 // Add your test steps here
             }
         }
-        stage('Deploy') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Deploying...'
+                echo 'Building Image...'
+                // Add your test steps here
+            }
+        }
+        stage('Image Hardening - Dockle') {
+            steps {
+                echo 'Dockle scanning...'
+                // Add your test steps here
+            }
+        }
+        stage('Vuln Scan  - Trivy') {
+            steps {
+                echo 'Tri scanning...'
+                // Add your test steps here
+            }
+        }
+        stage('Push Image to Registry') {
+            steps {
+                echo 'Pushing Image to Registry...'
                 // Add your deployment steps here
             }
         }
@@ -36,7 +73,7 @@ pipeline{
         }
     }
     options {
-        timeout(time: 1, unit: 'HOURS') // Set a timeout for the entire pipeline
+        // timeout(time: 1, unit: 'HOURS') // Set a timeout for the entire pipeline
         timestamps() // Add timestamps to the console output
         disableConcurrentBuilds() // Prevent concurrent builds of this pipeline
     }
