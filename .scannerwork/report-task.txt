@@ -1,0 +1,6 @@
+projectKey=test-MEL
+serverUrl=http://10.10.10.62:9001
+serverVersion=25.3.0.104237
+dashboardUrl=http://10.10.10.62:9001/dashboard?id=test-MEL
+ceTaskId=987aa5cb-3ef7-4ba3-aa19-0823649a85bd
+ceTaskUrl=http://10.10.10.62:9001/api/ce/task?id=987aa5cb-3ef7-4ba3-aa19-0823649a85bd
