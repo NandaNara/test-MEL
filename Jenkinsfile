@@ -8,7 +8,7 @@ pipeline{
         // stage('Secret Scan - TruffleHog') {
         //     steps {
         //         echo 'Scanning secret using TruffleHog... '
-        //         catchError(stageResult: 'FAILURE'){
+        //         script{
         //             sh """
         //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
         //                 cat trufflehog.txt
@@ -19,13 +19,14 @@ pipeline{
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
-                catchError(stageResult: 'FAILURE') {
-                    withSonarQubeEnv('sonar') {
-                        sh """
-                            mvn sonar:sonar
-                            cat target/sonar/report-task.txt
-                        """
-                    }
+                withSonarQubeEnv('sonar') {
+                    sh """
+                        mvn sonar:sonar
+                        cat target/sonar/report-task.txt
+                    """
+                }
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
