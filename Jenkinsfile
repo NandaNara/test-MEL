@@ -77,6 +77,6 @@ pipeline{
     options {
         // timeout(time: 1, unit: 'HOURS') // Set a timeout for the entire pipeline
         timestamps() // Add timestamps to the console output
-        // disableConcurrentBuilds() // Prevent concurrent builds of this pipeline
+        disableConcurrentBuilds() // Prevent concurrent builds of this pipeline
     }
 }
