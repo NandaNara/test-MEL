@@ -16,7 +16,7 @@ pipeline{
         //         }
         //     }
         // }
-        stage('SAST - SonarQube'){
+        stage('SAST - SonarQube') {
             steps {
                 echo 'Sonar Scanning...'
                 withSonarQubeEnv('sonar') {
@@ -25,6 +25,10 @@ pipeline{
                         cat target/sonar/report-task.txt
                     """
                 }
+            }
+        }
+        stage('Quality Gate - SonarQube') {
+            steps {
                 timeout(time: 3, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
