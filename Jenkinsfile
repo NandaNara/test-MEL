@@ -23,7 +23,7 @@ pipeline{
                     withSonarQubeEnv('sonar') {
                         sh """
                             mvn sonar:sonar
-                            cat /home/hduser/mataelang-lab/test-MEL/report-task.txt
+                            cat /home/hduser/mataelang-lab/test-MEL/.scannerwork/report-task.txt
                         """
                     }
                 }
