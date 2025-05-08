@@ -24,7 +24,7 @@ pipeline{
                         sh """
                             mvn clean package
                             mvn mvn sonar:sonar
-                            cat target/sonar/report-task.txt
+                            cat /home/hduser/mataelang-lab/test-MEL/report-task.txt
                         """
                     }
                 }
