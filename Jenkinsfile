@@ -5,17 +5,17 @@ pipeline{
     }
     stages {
         // ======= CODE STAGE =======
-        stage('Secret Scan - TruffleHog') {
-            steps {
-                echo 'Scanning secret using TruffleHog... '
-                catchError(stageResult: 'FAILURE'){
-                    sh """
-                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-                        cat trufflehog.txt
-                    """   
-                }
-            }
-        }
+        // stage('Secret Scan - TruffleHog') {
+        //     steps {
+        //         echo 'Scanning secret using TruffleHog... '
+        //         catchError(stageResult: 'FAILURE'){
+        //             sh """
+        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+        //                 cat trufflehog.txt
+        //             """   
+        //         }
+        //     }
+        // }
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
@@ -23,7 +23,8 @@ pipeline{
                     withSonarQubeEnv('sonar') {
                         sh """
                             mvn clean package
-                            mvn mvn sonar:sonar -Dsonar.url=http://http://10.10.10.62:9001/ -Dsonar.projectKey=test-MEL -Dsonarsources=.
+                            mvn mvn sonar:sonar
+                            cat target/sonar/report-task.txt
                         """
                     }
                 }
