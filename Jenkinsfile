@@ -22,7 +22,11 @@ pipeline{
                 catchError(stageResult: 'FAILURE') {
                     withSonarQubeEnv('sonar') {
                         sh """
-                            mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+                            sonar-scanner \ 
+                            -Dsonar.projectKey=test-MEL \ 
+                            -Dsonar.sources=. \ 
+                            -Dsonar.host.url=http://10.10.10.62:9001 \ 
+                            -Dsonar.login=sqp_2c8ff8e9ae35d502abeca661c315f7d01de62dc5
                         """
                     }
                 }
