@@ -22,8 +22,7 @@ pipeline{
                 catchError(stageResult: 'FAILURE') {
                     withSonarQubeEnv('sonar') {
                         sh """
-                            mvn sonar:sonar
-                           cat /target/sonar/report-task.txt
+                            mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
                         """
                     }
                 }
