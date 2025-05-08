@@ -36,12 +36,6 @@ pipeline{
         }
 
         // --- BUILD STAGE ---
-        stage('Dockerfile Lint - Hadolint') {
-            steps {
-                echo 'Hadolint scanning...'
-                // Add your test steps here
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Image...'
