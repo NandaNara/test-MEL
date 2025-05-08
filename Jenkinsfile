@@ -3,20 +3,38 @@ pipeline{
     
     stages {
         // ======= CODE STAGE =======
-        stage('Secrets Scan - GitLeaks'){
-            steps{
-                echo 'Running GitLeaks...'
-                sh """
-                    
-                """
-            }
-        }
-        stage('Check Secrets - TruffleHog') {
+        stage('Secret Scan - TruffleHog') {
             steps {
-                echo 'Scanning Secret using TruffleHog...'
+                echo 'Scanning secret using TruffleHog... '
                 script {
                     sh """
                         docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                        cat trufflehog.txt
+                    """
+                }
+            }
+        }
+        stage('Checkov') {
+            steps {
+                script {
+                    docker.image('bridgecrew/checkov:latest').inside("--entrypoint=''") {
+                        unstash 'terragoat'
+                        try {
+                            sh 'checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master'
+                            junit skipPublishingChecks: true, testResults: 'results.xml'
+                        } catch (err) {
+                            junit skipPublishingChecks: true, testResults: 'results.xml'
+                            throw err
+                        }
+                    }
+                }
+            }
+        }
+        stage('Dependency Scan - Trivy (SCA)'){
+            steps {
+                echo 'Scanning dependencies using Trivy... '
+                script {
+                    sh """
                         cat trufflehog.txt
                     """
                 }
