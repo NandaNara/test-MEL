@@ -22,8 +22,7 @@ pipeline{
                 catchError(stageResult: 'FAILURE') {
                     withSonarQubeEnv('sonar') {
                         sh """
-                            mvn clean package
-                            mvn mvn sonar:sonar
+                            mvn sonar:sonar
                             cat /home/hduser/mataelang-lab/test-MEL/report-task.txt
                         """
                     }
