@@ -22,8 +22,8 @@ pipeline{
                 catchError(stageResult: 'FAILURE') {
                     withSonarQubeEnv('sonar') {
                         sh """
-                            mvn clean package
-                            sonar-scanner -Dsonar.projectKey=test-MEL -Dsonar.sources=. -Dsonar.host.url=http://10.10.10.62:9001 -Dsonar.login=sqp_2c8ff8e9ae35d502abeca661c315f7d01de62dc5
+                            mvn sonar:sonar
+                            cat .scannerwork/report-task.txt
                         """
                     }
                 }
