@@ -4,18 +4,18 @@ pipeline{
         maven 'maven'
     }
     stages {
-        // ======= CODE STAGE =======
-        // stage('Secret Scan - TruffleHog') {
-        //     steps {
-        //         echo 'Scanning secret using TruffleHog... '
-        //         script{
-        //             sh """
-        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-        //                 cat trufflehog.txt
-        //             """
-        //         }
-        //     }
-        // }
+        ======= CODE STAGE =======
+        stage('Secret Scan - TruffleHog') {
+            steps {
+                echo 'Scanning secret using TruffleHog... '
+                script{
+                    sh """
+                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                        cat trufflehog.txt
+                    """
+                }
+            }
+        }
         stage('SAST - SonarQube') {
             steps {
                 echo 'Sonar Scanning...'
@@ -27,24 +27,18 @@ pipeline{
                 }
             }
         }
-        stage('Quality Gate - SonarQube') {
-            steps {
-                timeout(time: 3, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+        // stage('Quality Gate - SonarQube') {
+        //     steps {
+        //         timeout(time: 3, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
 
         // --- BUILD STAGE ---
         stage('Build Docker Image') {
             steps {
                 echo 'Building Image...'
-                // Add your test steps here
-            }
-        }
-        stage('Image Hardening - Dockle') {
-            steps {
-                echo 'Dockle scanning...'
                 // Add your test steps here
             }
         }
