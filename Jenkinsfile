@@ -5,28 +5,18 @@ pipeline{
     }
     stages {
         // ======= CODE STAGE =======
-        stage('Secret Scan - TruffleHog') {
-            steps {
-                echo 'Scanning secret using TruffleHog... '
-                script{
-                    sh """
-                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-                        cat trufflehog.txt
-                    """
-                }
-            }
-        }
-        // stage('Dependency Scan - Trivy (SCA)'){
+        // stage('Secret Scan - TruffleHog') {
         //     steps {
-        //         echo 'Scanning dependencies using Trivy... '
-        //         script {
+        //         echo 'Scanning secret using TruffleHog... '
+        //         catchError(stageResult: 'FAILURE'){
         //             sh """
+        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
         //                 cat trufflehog.txt
         //             """
         //         }
         //     }
         // }
-        stage('SAST - SonarQube') {
+        stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
                 withSonarQubeEnv('sonar') {
@@ -63,27 +53,32 @@ pipeline{
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
             steps {
-                echo 'Hadolint linting...'
+                echo 'Hadolint scanning...'
+                // Add your test steps here
             }
         }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Image...'
+                // Add your test steps here
             }
         }
-        stage('Hardening Image - Trivy') {
+        stage('Image Hardening - Dockle') {
             steps {
-                echo 'Trivy hardening image...'
+                echo 'Dockle scanning...'
+                // Add your test steps here
             }
         }
-        stage('Misconfig & Images Scan - Trivy') {
+        stage('Vuln Scan  - Trivy') {
             steps {
-                echo 'Trivy scanning...'
+                echo 'Tri scanning...'
+                // Add your test steps here
             }
         }
         stage('Push Image to Registry') {
             steps {
                 echo 'Pushing Image to Registry...'
+                // Add your deployment steps here
             }
         }
     }
