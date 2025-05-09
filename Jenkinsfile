@@ -5,60 +5,70 @@ pipeline{
     }
     stages {
         // ======= CODE STAGE =======
-        // stage('Secret Scan - TruffleHog') {
+        stage('Secret Scan - TruffleHog') {
+            steps {
+                echo 'Scanning secret using TruffleHog... '
+                script{
+                    sh """
+                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                        cat trufflehog.txt
+                    """
+                }
+            }
+        }
+        // stage('Dependency Scan - Trivy (SCA)'){
         //     steps {
-        //         echo 'Scanning secret using TruffleHog... '
-        //         catchError(stageResult: 'FAILURE'){
+        //         echo 'Scanning dependencies using Trivy... '
+        //         script {
         //             sh """
-        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
         //                 cat trufflehog.txt
         //             """
         //         }
         //     }
         // }
-        stage('SAST - SonarQube'){
+        stage('SAST - SonarQube') {
             steps {
                 echo 'Sonar Scanning...'
-                catchError(stageResult: 'FAILURE') {
-                    withSonarQubeEnv('sonar') {
-                        sh """
-                            mvn clean package
-                            sonar-scanner -Dsonar.projectKey=test-MEL -Dsonar.sources=. -Dsonar.host.url=http://10.10.10.62:9001 -Dsonar.login=sqp_2c8ff8e9ae35d502abeca661c315f7d01de62dc5
-                        """
-                    }
+                withSonarQubeEnv('sonar') {
+                    sh """
+                        mvn sonar:sonar
+                        cat target/sonar/report-task.txt
+                    """
                 }
             }
         }
+        // stage('Quality Gate - SonarQube') {
+        //     steps {
+        //         timeout(time: 3, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
 
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
             steps {
-                echo 'Hadolint scanning...'
-                // Add your test steps here
+                echo 'Hadolint linting...'
             }
         }
         stage('Build Docker Image') {
             steps {
                 echo 'Building Image...'
-                // Add your test steps here
             }
         }
-        stage('Image Hardening - Dockle') {
+        stage('Hardening Image - Trivy') {
             steps {
-                echo 'Dockle scanning...'
-                // Add your test steps here
+                echo 'Trivy hardening image...'
             }
         }
-        stage('Vuln Scan  - Trivy') {
+        stage('Misconfig & Images Scan - Trivy') {
             steps {
-                echo 'Tri scanning...'
-                // Add your test steps here
+                echo 'Trivy scanning...'
             }
         }
         stage('Push Image to Registry') {
             steps {
                 echo 'Pushing Image to Registry...'
-                // Add your deployment steps here
             }
         }
     }
