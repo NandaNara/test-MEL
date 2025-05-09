@@ -4,7 +4,7 @@ pipeline{
         maven 'maven'
     }
     stages {
-        ======= CODE STAGE =======
+        //======= CODE STAGE =======
         stage('Secret Scan - TruffleHog') {
             steps {
                 echo 'Scanning secret using TruffleHog... '
