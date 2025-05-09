@@ -44,6 +44,21 @@ pipeline{
         //         }
         //     }
         // }
+                withSonarQubeEnv('sonar') {
+                    sh """
+                        mvn sonar:sonar
+                        cat target/sonar/report-task.txt
+                    """
+                }
+            }
+        }
+        // stage('Quality Gate - SonarQube') {
+        //     steps {
+        //         timeout(time: 3, unit: 'MINUTES') {
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
 
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
