@@ -5,17 +5,17 @@ pipeline{
     }
     stages {
         // ======= CODE STAGE =======
-        // stage('Secret Scan - TruffleHog') {
-        //     steps {
-        //         echo 'Scanning secret using TruffleHog... '
-        //         catchError(stageResult: 'FAILURE'){
-        //             sh """
-        //                 docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-        //                 cat trufflehog.txt
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Secret Scan - TruffleHog') {
+            steps {
+                echo 'Scanning secret using TruffleHog... '
+                catchError(stageResult: 'FAILURE'){
+                    sh """
+                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                        cat trufflehog.txt
+                    """
+                }
+            }
+        }
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
@@ -27,28 +27,13 @@ pipeline{
                 }
             }
         }
-        // stage('Quality Gate - SonarQube') {
-        //     steps {
-        //         timeout(time: 3, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
-                withSonarQubeEnv('sonar') {
-                    sh """
-                        mvn sonar:sonar
-                        cat target/sonar/report-task.txt
-                    """
+        stage('Quality Gate - SonarQube') {
+            steps {
+                timeout(time: 3, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
-        // stage('Quality Gate - SonarQube') {
-        //     steps {
-        //         timeout(time: 3, unit: 'MINUTES') {
-        //             waitForQualityGate abortPipeline: true
-        //         }
-        //     }
-        // }
 
         // --- BUILD STAGE ---
         stage('Dockerfile Lint - Hadolint') {
