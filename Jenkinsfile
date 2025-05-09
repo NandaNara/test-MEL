@@ -44,7 +44,7 @@ pipeline{
         }
         stage('Vuln Scan  - Trivy') {
             steps {
-                echo 'Tri scanning...'
+                echo 'Trivy scanning...'
                 // Add your test steps here
             }
         }
