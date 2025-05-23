@@ -8,12 +8,19 @@ pipeline{
         stage('Secret Scan - TruffleHog') {
             steps {
                 echo 'Scanning secret using TruffleHog... '
-                catchError(stageResult: 'FAILURE'){
-                    sh """
-                        docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-                        cat trufflehog.txt
-                    """
-                }
+                sh """
+                    docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
+                    cat trufflehog.txt
+                """
+            }
+        }
+        stage('Dependency Scan (SCA) - Trivy') {
+            steps {
+                echo 'Scanning dependency using Trivy... '
+                sh """
+                    trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > trivy_sca.txt
+                    cat trivy_sca.txt
+                """
             }
         }
         stage('SAST - SonarQube'){
@@ -29,7 +36,7 @@ pipeline{
         }
         stage('Quality Gate - SonarQube') {
             steps {
-                timeout(time: 3, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -48,13 +55,13 @@ pipeline{
                 // Add your test steps here
             }
         }
-        stage('Image Hardening - Dockle') {
+        stage('Vuln Scan  - Trivy') {
             steps {
-                echo 'Dockle scanning...'
+                echo 'Tri scanning...'
                 // Add your test steps here
             }
         }
-        stage('Vuln Scan  - Trivy') {
+        stage('  - Trivy') {
             steps {
                 echo 'Tri scanning...'
                 // Add your test steps here
