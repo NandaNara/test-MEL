@@ -1,3 +1,7 @@
 readme2.txt
 trivy_kafka_connect.txt
 trivy_sca.txt
+user-manual/ascii-art.md
+
+#optional for remote access
+mvn-mel/
