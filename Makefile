@@ -16,7 +16,7 @@ mongo-user:
 	@sudo bash scripts/mongo-user.sh
 
 help:
-	@cat scripts/make-info.txt
+	@cat scripts/make-info.dev.txt
 
 info:
 	@cat scripts/web-info.txt

@@ -195,32 +195,32 @@ services:
       # - ME_CONFIG_MONGODB_ADMINPASSWORD=password
       - ME_CONFIG_MONGODB_SERVER=mongodb-mel
 
-  mongochart:
-    image: quay.io/mongodb/charts:19.12.2
-    hostname: mongo-charts
-    container_name: mongo-charts
-    restart: on-failure
-    depends_on:
-      - connect
-      - mongodb
-    ports:
-      - 9180:80
-      - 9443:443
-    healthcheck:
-        test: ["CMD", "charts-cli", "test-connection", "mongodb://172.17.0.1:27017"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
-    volumes:
-      - ./volume/mongochart/keys:/mongodb-charts/volumes/keys
-      - ./volume/mongochart/logs:/mongodb-charts/volumes/logs
-      - ./volume/mongochart/db-certs:/mongodb-charts/volumes/db-certs
-      - ./volume/mongochart/web-certs:/mongodb-charts/volumes/web-certs
-    environment:
-      CHARTS_SUPPORT_WIDGET_AND_METRICS: "on"
-      SSL_CERT_DIR: /mongodb-charts/voluinstructionsmes/db-certs
-      CHARTS_MONGODB_URI: mongodb://172.17.0.1:27017
-      # MONGODB_ROOT_PASSWORD: "password"
+  # mongochart:
+  #   image: quay.io/mongodb/charts:19.12.2
+  #   hostname: mongo-charts
+  #   container_name: mongo-charts
+  #   restart: on-failure
+  #   depends_on:
+  #     - connect
+  #     - mongodb
+  #   ports:
+  #     - 9180:80
+  #     - 9443:443
+  #   healthcheck:
+  #       test: ["CMD", "charts-cli", "test-connection", "mongodb://172.17.0.1:27017"]
+  #       interval: 30s
+  #       timeout: 10s
+  #       retries: 5
+  #   volumes:
+  #     - ./volume/mongochart/keys:/mongodb-charts/volumes/keys
+  #     - ./volume/mongochart/logs:/mongodb-charts/volumes/logs
+  #     - ./volume/mongochart/db-certs:/mongodb-charts/volumes/db-certs
+  #     - ./volume/mongochart/web-certs:/mongodb-charts/volumes/web-certs
+  #   environment:
+  #     CHARTS_SUPPORT_WIDGET_AND_METRICS: "on"
+  #     SSL_CERT_DIR: /mongodb-charts/voluinstructionsmes/db-certs
+  #     CHARTS_MONGODB_URI: mongodb://172.17.0.1:27017
+  #     # MONGODB_ROOT_PASSWORD: "password"
 
 volumes:
   shared-workspace:

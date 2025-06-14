@@ -129,7 +129,7 @@ sed -i 's/^JUPYTER_TOKEN=.*/JUPYTER_TOKEN='$NOTEBOOK_PASSWORD'/' envfile/noteboo
 #Running MQTT
 systemctl start mosquitto
 
-#Allow mqqt in firewall
+#Allow mqtt in firewall
 echo -e "\nAdding rule for port-forwarding"
 ufw allow 1883 
 ufw allow 7077 
@@ -230,7 +230,7 @@ echo -e "${YELLOW}Available WebApp${NC}"
 echo -e "(For easier Please Bookmark or Copy link)"
 echo -e "-----------------------------------"
 
-cat scripts/web-info.txt
+cat scripts/web-info.dev.txt
 
 echo -e "For easier debugging process, You can install portainer"
 
