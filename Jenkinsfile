@@ -156,6 +156,25 @@ pipeline{
                 // Add your deployment steps here
             }
         }
+
+        // ======= TEST STAGE =======
+        stage('DAST - ZAP Scan') {
+            steps {
+                echo 'Running DAST scan using ZAP...'
+                // Add your DAST scan steps here
+            }
+        }
+
+        // ======= ARCHIEVE ARTIFACTS =======
+        stage('Archieve Artifacts') {
+            steps {
+                echo 'Archiving artifacts...'
+                archiveArtifacts artifacts: "${reports_dir}/**/*.txt",
+                allowEmptyArchive: true,
+                fingerprint: true,
+                followSymlinks: false
+            }
+        }
     }
     post {
         success {
@@ -164,12 +183,12 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
-        always {
-            archiceArtifacts artifacts: 'reports/**/*.txt',
-            allowEmptyArchive: true,
-            fingerprint: true,
-            followSymlinks: false
-        }
+        // always {
+        //     archiceArtifacts artifacts: 'reports/**/*.txt',
+        //     allowEmptyArchive: true,
+        //     fingerprint: true,
+        //     followSymlinks: false
+        // }
     }
     options {
         buildDiscarder(
