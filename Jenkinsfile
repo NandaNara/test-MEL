@@ -77,10 +77,13 @@ pipeline{
             steps {
                 script {
                     echo 'Sonar Scanning...'
-                    def scannerHome = tool 'sonar';
+                    // def scannerHome = tool 'sonar';
+                    def maven = tool 'maven';
                     withSonarQubeEnv(installationName: 'sonar') {
-                        sh "${scannerHome}/bin/sonar-scanner"
                         sh """
+                            ${maven}/bin/mvn clean verify sonar:sonar \
+                            -Dsonar.projectKey=test-MEL \
+                            -DsonarprojectName='test-MEL'
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
