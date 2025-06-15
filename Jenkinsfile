@@ -17,7 +17,7 @@ pipeline{
     }
     tools {
         maven 'maven'
-        hudson.plugins.sonar.SonarRunnerInstallation 'sonar'
+        sonarScanner 'sonarScanner'
     }
     stages {
         stage('Setup Report Directories') {
