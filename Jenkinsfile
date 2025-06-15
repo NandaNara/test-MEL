@@ -17,6 +17,7 @@ pipeline{
     }
     tools {
         maven 'maven'
+        scannerHome = tool name: 'sonar'
     }
     stages {
         stage('Setup Report Directories') {
@@ -76,8 +77,8 @@ pipeline{
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
-                def scannerHome = tool 'sonar';
-                withSonarQubeEnv() {
+                // def scannerHome = tool 'sonar';
+                withSonarQubeEnv(installationName: 'sonar') {
                     sh """
                         ${scannerHome}/bin/sonar-scanner \
                         if [ ! -f target/sonar/report-task.txt ]; then
