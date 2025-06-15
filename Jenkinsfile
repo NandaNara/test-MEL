@@ -25,8 +25,8 @@ pipeline{
                 echo 'Scanning secret using TruffleHog... '
                 sh """
                     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                    --repo https://github.com/NandaNara/test-MEL --format json > ${trufflehog_dir}/trufflehog.json
-                    if [ -s trufflehog.json ]; then
+                    --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.txt
+                    if [ -s trufflehog.txt ]; then
                         echo 'TruffleHog found secrets in the repository.'
                     else
                         echo 'TruffleHog found no secrets in the repository.'
@@ -42,7 +42,11 @@ pipeline{
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
                     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . --format json > ${sca_dir}/trivy_sca.json
-                    cat trivy_sca.txt
+                    if [ -s ${sca_dir}/trivy_sca.json ]; then
+                        echo 'Trivy found issues in the dependencies.'
+                    else
+                        echo 'Trivy found no issues in the dependencies.'
+                    fi
                 """
             }
         }
@@ -52,7 +56,7 @@ pipeline{
                 withSonarQubeEnv('sonar') {
                     sh """
                         mvn sonar:sonar
-                        cat target/sonar/report-task.txt 
+                        cat target/sonar/report-task.txt
                     """
                 }
             }
