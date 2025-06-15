@@ -43,6 +43,12 @@ pipeline{
                         echo 'TruffleHog found no secrets in the repository.'
                     fi
                 """
+                archiceArtifacts(
+                    artifacts: "${trufflehog_dir}/trufflehog.txt",
+                    allowEmptyArchive: true,
+                    fingerprint: true,
+                    followSymlinks: false
+                )
             }
         }
         stage('Dependency Scan (SCA) - Trivy') {
@@ -59,6 +65,12 @@ pipeline{
                         echo 'Trivy found no issues in the dependencies.'
                     fi
                 """
+                archiceArtifacts(
+                    artifacts: "${sca_dir}/trivy_sca.json",
+                    allowEmptyArchive: true,
+                    fingerprint: true,
+                    followSymlinks: false
+                )
             }
         }
         stage('SAST - SonarQube'){
@@ -67,8 +79,19 @@ pipeline{
                 withSonarQubeEnv('sonar') {
                     sh """
                         mvn sonar:sonar
-                        cat target/sonar/report-task.txt
+                        if [ ! -f target/sonar/report-task.txt ]; then
+                            echo 'SonarQube found no issues in the code.'
+                        else
+                            echo 'SonarQube found issues in the code.'
+                        fi
+                        cp target/sonar/report-task.txt ${sast_dir}/report-task.txt
                     """
+                    archiceArtifacts(
+                        artifacts: "${sast_dir}/report-task.txt",
+                        allowEmptyArchive: true,
+                        fingerprint: true,
+                        followSymlinks: false
+                    )
                 }
             }
         }
@@ -141,12 +164,12 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
-        always {
-            archiceArtifacts artifacts: 'reports/**/*',
-            allowEmptyArchive: true,         // Archive all reports and artifacts
-            fingerprint: true,
-            followSymlinks: false
-        }
+        // always {
+        //     archiceArtifacts artifacts: 'reports/**/*',
+        //     allowEmptyArchive: true,         // Archive all reports and artifacts
+        //     fingerprint: true,
+        //     followSymlinks: false
+        // }
     }
     options {
         buildDiscarder(
