@@ -43,12 +43,12 @@ pipeline{
                         echo 'TruffleHog found no secrets in the repository.'
                     fi
                 """
-                archiceArtifacts(
-                    artifacts: "${trufflehog_dir}/trufflehog.txt",
-                    allowEmptyArchive: true,
-                    fingerprint: true,
-                    followSymlinks: false
-                )
+                // archiceArtifacts(
+                //     artifacts: "${trufflehog_dir}/trufflehog.txt",
+                //     allowEmptyArchive: true,
+                //     fingerprint: true,
+                //     followSymlinks: false
+                // )
             }
         }
         stage('Dependency Scan (SCA) - Trivy') {
@@ -58,19 +58,19 @@ pipeline{
                     trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL \
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
-                    --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . --format json > ${sca_dir}/trivy_sca.json
-                    if [ -s ${sca_dir}/trivy_sca.json ]; then
+                    --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
+                    if [ -s ${sca_dir}/trivy_sca.txt ]; then
                         echo 'Trivy found issues in the dependencies.'
                     else
                         echo 'Trivy found no issues in the dependencies.'
                     fi
                 """
-                archiceArtifacts(
-                    artifacts: "${sca_dir}/trivy_sca.json",
-                    allowEmptyArchive: true,
-                    fingerprint: true,
-                    followSymlinks: false
-                )
+                // archiceArtifacts(
+                //     artifacts: "${sca_dir}/trivy_sca.txt",
+                //     allowEmptyArchive: true,
+                //     fingerprint: true,
+                //     followSymlinks: false
+                // )
             }
         }
         stage('SAST - SonarQube'){
@@ -86,12 +86,12 @@ pipeline{
                         fi
                         cp target/sonar/report-task.txt ${sast_dir}/report-task.txt
                     """
-                    archiceArtifacts(
-                        artifacts: "${sast_dir}/report-task.txt",
-                        allowEmptyArchive: true,
-                        fingerprint: true,
-                        followSymlinks: false
-                    )
+                    // archiceArtifacts(
+                    //     artifacts: "${sast_dir}/report-task.txt",
+                    //     allowEmptyArchive: true,
+                    //     fingerprint: true,
+                    //     followSymlinks: false
+                    // )
                 }
             }
         }
@@ -164,12 +164,12 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
-        // always {
-        //     archiceArtifacts artifacts: 'reports/**/*',
-        //     allowEmptyArchive: true,         // Archive all reports and artifacts
-        //     fingerprint: true,
-        //     followSymlinks: false
-        // }
+        always {
+            archiceArtifacts artifacts: 'reports/**/*.txt',
+            allowEmptyArchive: true,
+            fingerprint: true,
+            followSymlinks: false
+        }
     }
     options {
         buildDiscarder(
