@@ -83,7 +83,8 @@ pipeline{
                         sh """
                             ${maven}/bin/mvn clean verify sonar:sonar \
                             -Dsonar.projectKey=test-MEL \
-                            -DsonarprojectName='test-MEL'
+                            -DsonarprojectName='test-MEL' \
+                            -Dsonar.token=squ_99d9ccb799b1a9e226e0bf8d9c62af9fefa015d2
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
