@@ -34,15 +34,15 @@ pipeline{
         stage('Secret Scan - TruffleHog') {
             steps {
                 echo 'Scanning secret using TruffleHog... '
-                // sh """
-                //     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                //     --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.txt
-                //     if [ -s trufflehog.txt ]; then
-                //         echo 'TruffleHog found secrets in the repository.'
-                //     else
-                //         echo 'TruffleHog found no secrets in the repository.'
-                //     fi
-                // """
+                sh """
+                    docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
+                    --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.txt
+                    if [ -s trufflehog.txt ]; then
+                        echo 'TruffleHog found secrets in the repository.'
+                    else
+                        echo 'TruffleHog found no secrets in the repository.'
+                    fi
+                """
                 // archiceArtifacts(
                 //     artifacts: "${trufflehog_dir}/trufflehog.txt",
                 //     allowEmptyArchive: true,
@@ -54,17 +54,17 @@ pipeline{
         stage('Dependency Scan (SCA) - Trivy') {
             steps {
                 echo 'Scanning dependency using Trivy... '
-                // sh """
-                //     trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL \
-                //     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
-                //     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
-                //     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
-                //     if [ -s ${sca_dir}/trivy_sca.txt ]; then
-                //         echo 'Trivy found issues in the dependencies.'
-                //     else
-                //         echo 'Trivy found no issues in the dependencies.'
-                //     fi
-                // """
+                sh """
+                    trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL \
+                    --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
+                    --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
+                    --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
+                    if [ -s ${sca_dir}/trivy_sca.txt ]; then
+                        echo 'Trivy found issues in the dependencies.'
+                    else
+                        echo 'Trivy found no issues in the dependencies.'
+                    fi
+                """
                 // archiceArtifacts(
                 //     artifacts: "${sca_dir}/trivy_sca.txt",
                 //     allowEmptyArchive: true,
