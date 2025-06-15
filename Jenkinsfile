@@ -36,8 +36,8 @@ pipeline{
                 echo 'Scanning secret using TruffleHog... '
                 sh """
                     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                    --repo https://github.com/NandaNara/test-MEL --format json > ${trufflehog_dir}/trufflehog.json
-                    if [ -s trufflehog.json ]; then
+                    --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.txt
+                    if [ -s trufflehog.txt ]; then
                         echo 'TruffleHog found secrets in the repository.'
                     else
                         echo 'TruffleHog found no secrets in the repository.'
