@@ -2,8 +2,8 @@ readme2.txt
 trivy_kafka_connect.txt
 trivy_sca.txt
 user-manual/ascii-art.md
-hadolint-report.txt
-dast-report.txt
+hadolint_report.txt
+dast_report.txt
 
 #optional for remote access
 #mvn-mel/

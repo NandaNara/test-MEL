@@ -76,16 +76,20 @@ pipeline{
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
-                withSonarQubeEnv('sonar') {
+                def scannerHome = tool 'sonar'
+                withSonarQubeEnv() {
                     sh """
-                        mvn sonar:sonar
+                        ${scannerHome}/bin/sonar-scanner \
                         if [ ! -f target/sonar/report-task.txt ]; then
                             echo 'SonarQube found no issues in the code.'
                         else
                             echo 'SonarQube found issues in the code.'
                         fi
-                        cp target/sonar/report-task.txt ${sast_dir}/report-task.txt
+                        cp target/sonar/report-task.txt ${sast_dir}/sast_report.txt
                     """
+                    // sh """
+                    //     mvn sonar:sonar
+                    // """
                     // archiceArtifacts(
                     //     artifacts: "${sast_dir}/report-task.txt",
                     //     allowEmptyArchive: true,
@@ -118,10 +122,10 @@ pipeline{
 
                 //         sh """
                 //             docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
-                //             /workspace/Dockerfile > hadolint-report.txt
-                //             if [ -s hadolint-report.txt ]; then
+                //             /workspace/Dockerfile > hadolint_report.txt
+                //             if [ -s hadolint_report.txt ]; then
                 //                 echo 'Hadolint found issues in the Dockerfiles.'
-                //                 cat hadolint-report.txt
+                //                 cat hadolint_report.txt
                 //             else
                 //                 echo 'Hadolint found no issues in the Dockerfiles.'
                 //             fi
