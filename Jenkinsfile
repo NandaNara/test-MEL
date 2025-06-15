@@ -17,7 +17,7 @@ pipeline{
     }
     tools {
         maven 'maven'
-        sonarScanner 'sonar'
+        SonarQube
     }
     stages {
         stage('Setup Report Directories') {
