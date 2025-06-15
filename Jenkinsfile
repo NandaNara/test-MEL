@@ -79,8 +79,8 @@ pipeline{
                     echo 'Sonar Scanning...'
                     def scannerHome = tool 'sonar';
                     withSonarQubeEnv(installationName: 'sonar') {
+                        sh "${scannerHome}/bin/sonar-scanner"
                         sh """
-                            ${scannerHome}/bin/sonar-scanner \
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
