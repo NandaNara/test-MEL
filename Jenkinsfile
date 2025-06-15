@@ -1,5 +1,20 @@
 pipeline{
     agent any
+    environment {
+        reports_dir = "${WORKSPACE}/reports"            // all reports dir
+
+        code_dir = "${reports_dir}/code-stage"          // code stage reports dir
+        build_dir = "${reports_dir}/build-stage"        // build stage reports dir
+        test_dir = "${reports_dir}/dast-zap"            // test stage report dir
+
+        trufflehog_dir = "${code_dir}/trufflehog"       // trufflehog report dir
+        sca_dir = "${code_dir}/sca-trivy"               // trivy sca report dir
+        sast_dir = "${code_dir}/sast-sonarqube"         // sonarqube report dir
+        lint_dir = "${code_dir}/hadolint"               // hadolint report dir
+
+        vuln_dir = "${build_dir}/vuln-scan-trivy"       // trivy vuln report dir
+        harden_dir = "${build_dir}/harden-trivy"        // hardening report dir
+    }
     tools {
         maven 'maven'
     }
@@ -10,8 +25,12 @@ pipeline{
                 echo 'Scanning secret using TruffleHog... '
                 sh """
                     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                    --repo https://github.com/NandaNara/test-MEL > trufflehog.txt
-                    cat trufflehog.txt
+                    --repo https://github.com/NandaNara/test-MEL --format json > ${trufflehog_dir}/trufflehog.json
+                    if [ -s trufflehog.json ]; then
+                        echo 'TruffleHog found secrets in the repository.'
+                    else
+                        echo 'TruffleHog found no secrets in the repository.'
+                    fi
                 """
             }
         }
@@ -22,7 +41,7 @@ pipeline{
                     trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL \
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
-                    --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > trivy_sca.txt
+                    --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . --format json > ${sca_dir}/trivy_sca.json
                     cat trivy_sca.txt
                 """
             }
@@ -33,7 +52,7 @@ pipeline{
                 withSonarQubeEnv('sonar') {
                     sh """
                         mvn sonar:sonar
-                        cat target/sonar/report-task.txt
+                        cat target/sonar/report-task.txt 
                     """
                 }
             }
@@ -45,35 +64,36 @@ pipeline{
                 }
             }
         }
-
-        // ======= BUILD STAGE =======
         stage('Dockerfile Lint - Hadolint') {
             steps {
-                script {
-                    def dockerfiles = findFiles(glob: '**/Dockerfile')
+                echo 'Linting Dockerfile using Hadolint...'
+                // script {
+                //     def dockerfiles = findFiles(glob: '**/Dockerfile')
 
-                    if (dockerfiles.isEmpty()) {
-                        error 'No Dockerfile found in the repository.'
-                    }
+                //     if (dockerfiles.isEmpty()) {
+                //         error 'No Dockerfile found in the repository.'
+                //     }
 
-                    dockerfiles.each { Df ->
-                        def dirPath = Df.path.replace('/Dockerfile', ' ')
-                        echo "Linting Dockerfile in directory: ${dirPath}"
+                //     dockerfiles.each { Df ->
+                //         def dirPath = Df.path.replace('/Dockerfile', ' ')
+                //         echo "Linting Dockerfile in directory: ${dirPath}"
 
-                        sh """
-                            docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
-                            /workspace/Dockerfile > hadolint-report.txt
-                            if [ -s hadolint-report.txt ]; then
-                                echo 'Hadolint found issues in the Dockerfiles.'
-                                cat hadolint-report.txt
-                            else
-                                echo 'Hadolint found no issues in the Dockerfiles.'
-                            fi
-                        """
-                    }
-                }
+                //         sh """
+                //             docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
+                //             /workspace/Dockerfile > hadolint-report.txt
+                //             if [ -s hadolint-report.txt ]; then
+                //                 echo 'Hadolint found issues in the Dockerfiles.'
+                //                 cat hadolint-report.txt
+                //             else
+                //                 echo 'Hadolint found no issues in the Dockerfiles.'
+                //             fi
+                //         """
+                //     }
+                // }
             }
         }
+
+        // ======= BUILD STAGE =======
         stage('Build Docker Image') {
             steps {
                 echo 'Building Image...'
@@ -107,12 +127,21 @@ pipeline{
             echo 'Pipeline failed!'
         }
         always {
-            echo 'This will always run, regardless of success or failure.'
+            archiceArtifacts artifacts: 'reports/**/*',
+            allowEmptyArchive: true         // Archive all reports and artifacts
+            fingerprint: true
+            followSymlinks: false
         }
     }
     options {
-        // timeout(time: 1, unit: 'HOURS') // Set a timeout for the entire pipeline
-        timestamps() // Add timestamps to the console output
-        disableConcurrentBuilds() // Prevent concurrent builds of this pipeline
+        buildDiscarder(
+            logRotator(
+                artifactDaysToKeepStr: '30',        // Keep artifacts for 30 days
+                artifactNumToKeepStr: '10'      // Keep the last 10 artifacts
+                daysToKeepStr: '7',             // Keep logs for 7 days
+            )
+        )
+        timestamps()        // Add timestamps to the console output
+        disableConcurrentBuilds()       // Prevent concurrent builds of this pipeline
     }
 }

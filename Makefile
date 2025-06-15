@@ -16,10 +16,10 @@ mongo-user:
 	@sudo bash scripts/mongo-user.sh
 
 help:
-	@cat scripts/make-info.dev.txt
+	@cat scripts/make_info.txt
 
 info:
-	@cat scripts/web-info.txt
+	@cat scripts/web_info.dev.txt
 
 modul-list:
 	@sudo docker ps -a
