@@ -128,8 +128,8 @@ pipeline{
         }
         always {
             archiceArtifacts artifacts: 'reports/**/*',
-            allowEmptyArchive: true         // Archive all reports and artifacts
-            fingerprint: true
+            allowEmptyArchive: true,         // Archive all reports and artifacts
+            fingerprint: true,
             followSymlinks: false
         }
     }
