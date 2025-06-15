@@ -137,7 +137,7 @@ pipeline{
         buildDiscarder(
             logRotator(
                 artifactDaysToKeepStr: '30',        // Keep artifacts for 30 days
-                artifactNumToKeepStr: '10'      // Keep the last 10 artifacts
+                artifactNumToKeepStr: '10',      // Keep the last 10 artifacts
                 daysToKeepStr: '7',             // Keep logs for 7 days
             )
         )
