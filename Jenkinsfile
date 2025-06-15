@@ -61,7 +61,7 @@ pipeline{
                         echo "Linting Dockerfile in directory: ${dirPath}"
 
                         sh """
-                            docker run --rm -v $(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
+                            docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
                             /workspace/Dockerfile > hadolint-report.txt
                             if [ -s hadolint-report.txt ]; then
                                 echo 'Hadolint found issues in the Dockerfiles.'
