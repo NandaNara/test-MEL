@@ -76,7 +76,7 @@ pipeline{
         stage('SAST - SonarQube'){
             steps {
                 echo 'Sonar Scanning...'
-                def scannerHome = tool 'sonar'
+                def scannerHome = tool 'sonar';
                 withSonarQubeEnv() {
                     sh """
                         ${scannerHome}/bin/sonar-scanner \
