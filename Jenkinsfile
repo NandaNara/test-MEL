@@ -169,7 +169,7 @@ pipeline{
         stage('Archieve Artifacts') {
             steps {
                 echo 'Archiving artifacts...'
-                archiveArtifacts artifacts: '**/*.txt',
+                archiveArtifacts artifacts: 'reports**/*.txt',
                 allowEmptyArchive: true,
                 fingerprint: true,
                 followSymlinks: false
