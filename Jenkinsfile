@@ -17,7 +17,7 @@ pipeline{
     }
     tools {
         maven 'maven'
-        scannerHome = tool name: 'sonar'
+        sonarScanner 'sonar'
     }
     stages {
         stage('Setup Report Directories') {
