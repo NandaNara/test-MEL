@@ -90,9 +90,9 @@ pipeline{
         }
         stage('Dockerfile Lint - Hadolint') {
             steps {
-                // echo 'Linting Dockerfile using Hadolint...'
                 script {
-                    sh '''
+                    catchError (buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
                         lint_dir="reports/code-stage/hadolint"
                         mkdir -p "$lint_dir"
                         find . -name Dockerfile -exec sh -c '
@@ -108,6 +108,7 @@ pipeline{
                             exit $overall_status
                         ' sh {} +
                     '''
+                    }
                 }
             }
         }
