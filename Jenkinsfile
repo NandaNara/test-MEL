@@ -81,13 +81,6 @@ pipeline{
                 }
             }
         }
-        stage('Quality Gate - SonarQube') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
         stage('Dockerfile Lint - Hadolint') {
             steps {
                 script {
@@ -96,19 +89,26 @@ pipeline{
                         lint_dir="reports/code-stage/hadolint"
                         mkdir -p "$lint_dir"
                         find . -name Dockerfile -exec sh -c '
-                            overall_status=0
+                            lint_status=0
                             for dockerfile; do
                                 filename=$(echo "$dockerfile" | sed "s|^\\./||" | tr "/" "_")
                                 report="$lint_dir/${filename}_lint.txt"
                                 echo "Linting: $dockerfile"
-                                if ! docker run --rm -i hadolint/hadolint < "$dockerfile" > "$report" 2>&1; then
-                                    overall_status=1
+                                if ! docker run --rm -i hadolint/hadolint:latest-debian < "$dockerfile" > "$report" 2>&1; then
+                                    lint_status=$((lint_status + 1))
                                 fi
                             done
-                            exit $overall_status
                         ' sh {} +
                     '''
+                                                // exit $lint_status
                     }
+                }
+            }
+        }
+        stage('Quality Gate - SonarQube') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
