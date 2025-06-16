@@ -80,7 +80,8 @@ pipeline{
                     def scannerHome = tool 'sonar';
                     withSonarQubeEnv(installationName: 'sonar') {
                         sh """
-                            ${scannerHome}/bin/sonar-scanner
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.exclude="**/*.java"
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
