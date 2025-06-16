@@ -81,7 +81,7 @@ pipeline{
                     //             echo 'SonarQube found issues in the code.'
                     //         fi
                     //     """
-                    // }
+                    }
                 }
             }
         }
@@ -107,7 +107,7 @@ pipeline{
                     //         done
                     //     ' sh {} +
                     // '''
-                    }
+                    // }
                 }
             }
         }
