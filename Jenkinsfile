@@ -54,9 +54,9 @@ pipeline{
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
                     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
 
-                    trivy fs --scanners vuln,config,secret,license --severity CRITICAL,HIGH,MEDIUM --exit-code 1 \
-                    --dependency-types direct,dev . > ${sca_dir}/trivy_sca_full.txt
-                    if [ ! -s ${sca_dir}/trivy_sca.txt ]; then
+                    trivy fs --scanners vuln,config,secret,license --severity CRITICAL,HIGH,MEDIUM \
+                    --exit-code 1 . > ${sca_dir}/trivy_sca_full.txt
+                    if [ ! -s ${sca_dir}/trivy_sca_full.txt ]; then
                         echo 'Trivy found no issues in the dependencies.'
                     else
                         echo 'Trivy found issues in the dependencies.'
