@@ -81,7 +81,8 @@ pipeline{
                     withSonarQubeEnv(installationName: 'sonar') {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.exclusions="**/*.java"
+                            -Dsonar.exclusions="**/*.java" \
+                            -Dsonar.projectName="test-MEL"
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
