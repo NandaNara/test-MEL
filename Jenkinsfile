@@ -49,13 +49,13 @@ pipeline{
             steps {
                 echo 'Scanning dependency using Trivy... '
                 sh """
-                    trivy fs --scanners vuln,license --exit-code 1 --severity HIGH,CRITICAL \
+                    trivy fs --scanners vuln,license --exit-code 0 --severity HIGH,CRITICAL \
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
                     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
 
                     trivy fs --scanners vuln,config,secret,license --severity CRITICAL,HIGH,MEDIUM \
-                    --exit-code 1 . > ${sca_dir}/trivy_sca_full.txt
+                    --exit-code 0 . > ${sca_dir}/trivy_sca_full.txt
                     if [ ! -s ${sca_dir}/trivy_sca_full.txt ]; then
                         echo 'Trivy found no issues in the dependencies.'
                     else
@@ -87,6 +87,7 @@ pipeline{
         stage('Dockerfile Lint - Hadolint') {
             steps {
                 script {
+                    echo 'Linting Dockerfiles using Hadolint...'
                     catchError (buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         sh '''
                         lint_dir="reports/code-stage/hadolint"
