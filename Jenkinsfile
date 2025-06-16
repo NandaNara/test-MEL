@@ -24,7 +24,7 @@ pipeline{
                 echo 'Preparing workspace...'
                 sh """
                     mkdir -p ${reports_dir} ${code_dir} ${build_dir} ${test_dir}
-                    mkdir -p ${trufflehog_dir} ${sca_dir} ${sast_dir} ${lint_dir}
+                    mkdir -p ${trufflehog_dir} ${sca_dir} ${sast_dir}
                     mkdir -p ${vuln_dir} ${harden_dir}
                 """
             }
@@ -93,20 +93,22 @@ pipeline{
             steps {
                 // echo 'Linting Dockerfile using Hadolint...'
                 script {
-                    sh """
+                    sh '''
+                        lint_dir="reports/code-stage/hadolint"
+                        mkdir -p "$lint_dir"
                         find . -name Dockerfile -exec sh -c '
                             overall_status=0
                             for dockerfile; do
                                 filename=$(echo "$dockerfile" | sed "s|^\./||" | tr "/" "_")
-                                report="${lint_dir}/${filename}_lint.txt"
-                                echo "🔍 Linting: $dockerfile"
+                                report="$lint_dir/${filename}_lint.txt"
+                                echo "Linting: $dockerfile"
                                 if ! docker run --rm -i hadolint/hadolint < "$dockerfile" > "$report" 2>&1; then
                                     overall_status=1
                                 fi
                             done
                             exit $overall_status
                         ' sh {} +
-                    """
+                    '''
                 }
             }
         }
