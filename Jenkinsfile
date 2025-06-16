@@ -43,10 +43,10 @@ pipeline{
                 sh """
                     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
                     --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.json
-                    if [ -s trufflehog.json ]; then
-                        echo 'TruffleHog found secrets in the repository.'
-                    else
+                    if [ ! -s ${trufflehog_dir}/trufflehog.json ]; then
                         echo 'TruffleHog found no secrets in the repository.'
+                    else
+                        echo 'TruffleHog found secrets in the repository.'
                     fi
                 """
             }
@@ -74,7 +74,7 @@ pipeline{
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.exclusions="**/*.java" \
-                            -Dsonar.projectName="test-MEL" -f json > ${sast_dir}/sast_report.json 2>&1
+                            -Dsonar.projectName="test-MEL" > ${sast_dir}/sast_report.json 2>&1
                             if [ ! -s ${sast_dir}/sast_report.json ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
