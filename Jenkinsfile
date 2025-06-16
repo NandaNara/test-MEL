@@ -2,19 +2,15 @@ pipeline{
     agent any
     environment {
         reports_dir = "${WORKSPACE}/reports"                // all reports dir
-
         code_dir = "${reports_dir}/code-stage"              // code stage reports dir
         build_dir = "${reports_dir}/build-stage"            // build stage reports dir
         test_dir = "${reports_dir}/dast-zap"                // test stage report dir
-
         trufflehog_dir = "${code_dir}/trufflehog"           // trufflehog report dir
         sca_dir = "${code_dir}/sca-trivy"                   // trivy sca report dir
         sast_dir = "${code_dir}/sast-sonarqube"             // sonarqube report dir
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
-
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
         // build_log_dir = "${build_dir}/build-log"            // build log dir
-
         DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
     }
     tools {
@@ -175,7 +171,7 @@ pipeline{
 
                             # save images names which suscessfully built to env.properties
                             if [ -f image_names.txt ]; then
-                                echo "BUILT_IMAGES=$(paste -sd, image_names.txt)" >> env.properties
+                                cp image_names.txt built_images.txt
                             fi
                             exit 0
                         '''
@@ -186,9 +182,8 @@ pipeline{
                 always {
                     script {
                         // save built image for next stage
-                        if (fileExists('env.properties')) {
-                            def props = readProperties file: 'env.properties'
-                            env.BUILT_IMAGES = props.BUILT_IMAGES ?: ''
+                        if (fileExists('built_images.txt')) {
+                            env.BUILT_IMAGES = readFile('built_images.txt').trim().replace('\n', ',')
                             echo "Successfully built images: ${env.BUILT_IMAGES}"
                         }
                     }
