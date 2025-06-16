@@ -80,8 +80,7 @@ pipeline{
                     def scannerHome = tool 'sonar';
                     withSonarQubeEnv(installationName: 'sonar') {
                         sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.exclusions="**/*.java"
+                            ${scannerHome}/bin/sonar-scanner
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
@@ -92,6 +91,7 @@ pipeline{
                         // sh """
                         //     mvn sonar:sonar
                         //     ${maven}/bin/mvn clean verify sonar:sonar
+                        //     -Dsonar.exclusions="**/*.java"
                         // """
                         // archiceArtifacts(
                         //     artifacts: "${sast_dir}/report-task.txt",
