@@ -43,12 +43,6 @@ pipeline{
                         echo 'TruffleHog found no secrets in the repository.'
                     fi
                 """
-                // archiceArtifacts(
-                //     artifacts: "${trufflehog_dir}/trufflehog.txt",
-                //     allowEmptyArchive: true,
-                //     fingerprint: true,
-                //     followSymlinks: false
-                // )
             }
         }
         stage('Dependency Scan (SCA) - Trivy') {
@@ -65,12 +59,6 @@ pipeline{
                         echo 'Trivy found no issues in the dependencies.'
                     fi
                 """
-                // archiceArtifacts(
-                //     artifacts: "${sca_dir}/trivy_sca.txt",
-                //     allowEmptyArchive: true,
-                //     fingerprint: true,
-                //     followSymlinks: false
-                // )
             }
         }
         stage('SAST - SonarQube'){
@@ -90,16 +78,6 @@ pipeline{
                             fi
                             cp target/sonar/report-task.txt ${sast_dir}/sast_report.txt
                         """
-                        // sh """
-                        //     mvn sonar:sonar
-                        //     ${maven}/bin/mvn clean verify sonar:sonar
-                        // """
-                        // archiceArtifacts(
-                        //     artifacts: "${sast_dir}/report-task.txt",
-                        //     allowEmptyArchive: true,
-                        //     fingerprint: true,
-                        //     followSymlinks: false
-                        // )
                     }
                 }
             }
@@ -114,29 +92,29 @@ pipeline{
         stage('Dockerfile Lint - Hadolint') {
             steps {
                 echo 'Linting Dockerfile using Hadolint...'
-                // script {
-                //     def dockerfiles = findFiles(glob: '**/Dockerfile')
+                script {
+                    def dockerfiles = findFiles(glob: '**/Dockerfile')
 
-                //     if (dockerfiles.isEmpty()) {
-                //         error 'No Dockerfile found in the repository.'
-                //     }
+                    if (dockerfiles.isEmpty()) {
+                        error 'No Dockerfile found in the repository.'
+                    }
 
-                //     dockerfiles.each { Df ->
-                //         def dirPath = Df.path.replace('/Dockerfile', ' ')
-                //         echo "Linting Dockerfile in directory: ${dirPath}"
+                    dockerfiles.each { Df ->
+                        def dirPath = Df.path.replace('/Dockerfile', ' ')
+                        echo "Linting Dockerfile in directory: ${dirPath}"
 
-                //         sh """
-                //             docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
-                //             /workspace/Dockerfile > hadolint_report.txt
-                //             if [ -s hadolint_report.txt ]; then
-                //                 echo 'Hadolint found issues in the Dockerfiles.'
-                //                 cat hadolint_report.txt
-                //             else
-                //                 echo 'Hadolint found no issues in the Dockerfiles.'
-                //             fi
-                //         """
-                //     }
-                // }
+                        sh """
+                            docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
+                            /workspace/Dockerfile > hadolint_report.txt
+                            if [ -s hadolint_report.txt ]; then
+                                echo 'Hadolint found issues in the Dockerfiles.'
+                                cat hadolint_report.txt
+                            else
+                                echo 'Hadolint found no issues in the Dockerfiles.'
+                            fi
+                        """
+                    }
+                }
             }
         }
 
