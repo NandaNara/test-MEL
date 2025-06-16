@@ -163,18 +163,18 @@ pipeline{
             steps {
                 script {
                     echo 'Trivy scanning... '
-                //     sh """
-                //         trivy image --exit-code 0 --severity CRITICAL,HIGH \
-                //         --security-checks config \
-                //         --scanners vuln,config,secret,license ${image_name} \
-                //         -f json > ${img_scan_dir}/trivy_img_scan.json
-                //         if [ ! -s ${img_scan_dir}/trivy_img_scan.json ]; then
-                //             echo 'Trivy found no issues in the image.'
-                //         else
-                //             echo 'Trivy found issues in the image.'
-                //         fi
-                //     """
-                // }
+                    // sh """
+                    //     trivy image --exit-code 0 --severity CRITICAL,HIGH \
+                    //     --security-checks config \
+                    //     --scanners vuln,config,secret,license ${image_name} \
+                    //     -f json > ${img_scan_dir}/trivy_img_scan.json
+                    //     if [ ! -s ${img_scan_dir}/trivy_img_scan.json ]; then
+                    //         echo 'Trivy found no issues in the image.'
+                    //     else
+                    //         echo 'Trivy found issues in the image.'
+                    //     fi
+                    // """
+                }
             }
         }
         stage('Push Image to Registry') {
@@ -210,6 +210,7 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
+    }
     options {
         buildDiscarder(
             logRotator(
