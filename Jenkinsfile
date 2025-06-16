@@ -77,14 +77,10 @@ pipeline{
             steps {
                 script {
                     echo 'Sonar Scanning...'
-                    // def scannerHome = tool 'sonar';
-                    def maven = tool 'maven';
+                    def scannerHome = tool 'SonarScanner';
                     withSonarQubeEnv(installationName: 'sonar') {
                         sh """
-                            ${maven}/bin/mvn clean verify sonar:sonar \
-                            -Dsonar.projectKey=test-MEL \
-                            -DsonarprojectName='test-MEL' \
-                            -Dsonar.token=squ_99d9ccb799b1a9e226e0bf8d9c62af9fefa015d2
+                            ${scannerHome}/bin/sonar-scanner
                             if [ ! -f target/sonar/report-task.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
@@ -94,6 +90,7 @@ pipeline{
                         """
                         // sh """
                         //     mvn sonar:sonar
+                        //     ${maven}/bin/mvn clean verify sonar:sonar
                         // """
                         // archiceArtifacts(
                         //     artifacts: "${sast_dir}/report-task.txt",

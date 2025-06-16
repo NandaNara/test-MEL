@@ -4,6 +4,7 @@ trivy_sca.txt
 user-manual/ascii-art.md
 hadolint_report.txt
 dast_report.txt
+.scannerwork/
 
 #optional for remote access
 mvn-mel/
