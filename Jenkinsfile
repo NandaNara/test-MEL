@@ -53,6 +53,9 @@ pipeline{
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
                     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
+
+                    trivy fs --scanners vuln,config,secret,license --severity CRITICAL,HIGH,MEDIUM --exit-code 1 \
+                    --dependency-types direct,dev . > ${sca_dir}/trivy_sca_full.txt
                     if [ ! -s ${sca_dir}/trivy_sca.txt ]; then
                         echo 'Trivy found no issues in the dependencies.'
                     else
@@ -94,13 +97,13 @@ pipeline{
                                 filename=$(echo "$dockerfile" | sed "s|^\\./||" | tr "/" "_")
                                 report="$lint_dir/${filename}_lint.txt"
                                 echo "Linting: $dockerfile"
-                                if ! docker run --rm -i hadolint/hadolint:latest-debian < "$dockerfile" > "$report" 2>&1; then
-                                    lint_status=$((lint_status + 1))
+                                if ! docker run --rm -i hadolint/hadolint:latest-debian < "$dockerfile" > "$report" 2>&1;
+                                #then
+                                    #lint_status=$((lint_status + 1))
                                 fi
                             done
                         ' sh {} +
                     '''
-                                                // exit $lint_status
                     }
                 }
             }
