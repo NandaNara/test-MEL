@@ -6,4 +6,4 @@ hadolint_report.txt
 dast_report.txt
 
 #optional for remote access
-#mvn-mel/
+mvn-mel/
