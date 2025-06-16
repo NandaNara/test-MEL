@@ -77,7 +77,7 @@ pipeline{
             steps {
                 script {
                     echo 'Sonar Scanning...'
-                    def scannerHome = tool 'SonarScanner';
+                    def scannerHome = tool 'sonar';
                     withSonarQubeEnv(installationName: 'sonar') {
                         sh """
                             ${scannerHome}/bin/sonar-scanner
