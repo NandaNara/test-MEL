@@ -19,6 +19,12 @@ pipeline{
         maven 'maven'
     }
     stages {
+        stage('Clean Old Artifacts') {
+            steps {
+                echo 'Cleaning old artifacts...'
+                sh "rm -rf ${reports_dir}/*"
+            }
+        }
         stage('Setup Report Directories') {
             steps {
                 echo 'Preparing workspace...'
@@ -36,8 +42,8 @@ pipeline{
                 echo 'Scanning secret using TruffleHog... '
                 sh """
                     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                    --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.txt
-                    if [ -s trufflehog.txt ]; then
+                    --repo https://github.com/NandaNara/test-MEL -f json > ${trufflehog_dir}/trufflehog.json
+                    if [ -s trufflehog.json ]; then
                         echo 'TruffleHog found secrets in the repository.'
                     else
                         echo 'TruffleHog found no secrets in the repository.'
@@ -50,8 +56,8 @@ pipeline{
                 echo 'Scanning dependency using Trivy... '
                 sh """
                     trivy fs --scanners vuln,config,secret,license --severity CRITICAL,HIGH,MEDIUM \
-                    --exit-code 0 . > ${sca_dir}/trivy_sca.txt
-                    if [ ! -s ${sca_dir}/trivy_sca.txt ]; then
+                    --exit-code 0 . -f json > ${sca_dir}/trivy_sca.json
+                    if [ ! -s ${sca_dir}/trivy_sca.json ]; then
                         echo 'Trivy found no issues in the dependencies.'
                     else
                         echo 'Trivy found issues in the dependencies.'
@@ -68,8 +74,8 @@ pipeline{
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.exclusions="**/*.java" \
-                            -Dsonar.projectName="test-MEL" > ${sast_dir}/sast_report.txt 2>&1
-                            if [ ! -s ${sast_dir}/sast_report.txt ]; then
+                            -Dsonar.projectName="test-MEL" -f json > ${sast_dir}/sast_report.json 2>&1
+                            if [ ! -s ${sast_dir}/sast_report.json ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
                                 echo 'SonarQube found issues in the code.'
@@ -91,7 +97,7 @@ pipeline{
                             lint_status=0
                             for dockerfile; do
                                 filename=$(echo "$dockerfile" | sed "s|^\\./||" | tr "/" "_")
-                                report="$lint_dir/${filename}_lint.txt"
+                                report="$lint_dir/${filename}_lint.json"
                                 echo "Linting: $dockerfile"
                                 if ! docker run --rm -i hadolint/hadolint:latest-debian < "$dockerfile" > "$report" 2>&1; then
                                     lint_status=$((lint_status + 1))
@@ -149,7 +155,7 @@ pipeline{
         stage('Archieve Artifacts') {
             steps {
                 echo 'Archiving artifacts...'
-                archiveArtifacts artifacts: 'reports/**/*.txt',
+                archiveArtifacts artifacts: 'reports/**/*.json',
                 allowEmptyArchive: true,
                 fingerprint: true,
                 followSymlinks: false
@@ -164,7 +170,7 @@ pipeline{
             echo 'Pipeline failed!'
         }
         // always {
-        //     archiceArtifacts artifacts: 'reports/**/*.txt',
+        //     archiceArtifacts artifacts: 'reports/**/*.json',
         //     allowEmptyArchive: true,
         //     fingerprint: true,
         //     followSymlinks: false
