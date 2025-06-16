@@ -13,6 +13,9 @@ pipeline{
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
 
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
+        // build_log_dir = "${build_dir}/build-log"            // build log dir
+
+        DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
     }
     tools {
         maven 'maven'
@@ -21,7 +24,7 @@ pipeline{
         stage('Clean Old Artifacts') {
             steps {
                 echo 'Cleaning old artifacts... '
-                // sh "rm -rf ${reports_dir}/*"
+                sh "rm -rf ${reports_dir}/*"
             }
         }
         stage('Setup Report Directories') {
@@ -88,7 +91,7 @@ pipeline{
             steps {
                 script {
                     echo 'Linting Dockerfiles using Hadolint... '
-                    // catchError (buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    // catchError (buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     //     sh '''
                     //     lint_dir="reports/code-stage/hadolint"
                     //     mkdir -p "$lint_dir"
@@ -119,14 +122,24 @@ pipeline{
         // }
 
         // ======= BUILD STAGE =======
+        stage('Dockerhub Login') {
+            steps {
+                echo 'Logging in to Dockerhub...'
+                sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+            }
+        }
         stage('Build Docker Image') {
+            environment {
+                DOCKER_BUILDKIT = "1"
+            }
             steps {
                 echo 'Building Image...'
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     script {
                         sh '''
                             build_errors=0
                             image_names=""
+                            export DOCKER_BUILDKIT=1
 
                             # find all Dockerfiles then build them
                             find . -name Dockerfile -exec sh -c '
@@ -134,11 +147,23 @@ pipeline{
                                     dir_path=$(dirname "$dockerfile")
                                     component=$(basename "$dir_path")
                                     image_name="mel/${component}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
+                                    cache_image="mel/${component}:cache"
                                     echo "Building: $image_name"
 
+                                    # pull cache image if exists from last build
+                                    docker pull "$cache_image" || true
+
                                     # building each image
-                                    if (cd "$dir_path" && docker build -t "$image_name" .) then
+                                    if (cd "$dir_path" && docker build \
+                                        --cache-from "$cache_image" \
+                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                        -t "$image_name" .) then
                                         echo "Successfully built: $image_name"
+
+                                        # save cache image for next build
+                                        docker tag "$image_name" "$cache_image"
+                                        docker push "$cache_image" || echo "Cache push failed, but build succeeded"
+
                                         # save iamge name for next stage
                                         echo "$image_name" >> image_names.txt
                                     else
@@ -150,10 +175,22 @@ pipeline{
 
                             # save images names which suscessfully built to env.properties
                             if [ -f image_names.txt ]; then
-                            echo "BUILT_IMAGES=$(paste -sd, image_names.txt)" >> env.properties
+                                echo "BUILT_IMAGES=$(paste -sd, image_names.txt)" >> env.properties
                             fi
                             exit 0
                         '''
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        // save built image for next stage
+                        if (fileExists('env.properties')) {
+                            def props = readProperties file: 'env.properties'
+                            env.BUILT_IMAGES = props.BUILT_IMAGES ?: ''
+                            echo "Successfully built images: ${env.BUILT_IMAGES}"
+                        }
                     }
                 }
             }
@@ -162,17 +199,34 @@ pipeline{
             steps {
                 script {
                     echo 'Trivy scanning... '
-                    // sh """
-                    //     trivy image --exit-code 0 --severity CRITICAL,HIGH \
-                    //     --security-checks config \
-                    //     --scanners vuln,config,secret,license ${image_name} \
-                    //     -f json > ${img_scan_dir}/trivy_img_scan.json
-                    //     if [ ! -s ${img_scan_dir}/trivy_img_scan.json ]; then
-                    //         echo 'Trivy found no issues in the image.'
-                    //     else
-                    //         echo 'Trivy found issues in the image.'
-                    //     fi
-                    // """
+                    def images = env.BUILT_IMAGES.split(',')
+                    def scanReports = [:]
+                    sh 'mkdir -p "$img_scan_dir"'
+
+                    // find all images then scan them
+                    for (int i = 0; i < images.size(); i++){
+                        def image = images[i].trim()
+                        def safeImageName = image.replaceAll('[:/]', '_')  // Buat nama file aman
+                        def reportFile = "${img_scan_dir}/trivy_${safeImageName}.json"
+
+                        scanReports["scan_${safeImageName}"] = {
+                            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                                sh """
+                                    echo "Scanning image: ${image}"
+                                    trivy image --exit-code 0 --severity CRITICAL,HIGH \
+                                    --security-checks config \
+                                    --scanners vuln,config,secret,license "${image}" \
+                                    -f json > "${reportFile}"
+                                    if [ ! -s "${reportFile}" ]; then
+                                        echo "✅ Trivy found no issues in: ${image}"
+                                    else
+                                        echo "Trivy found issues in: ${image}"
+                                    fi
+                                """
+                            }
+                        }
+                        parallel scanReports
+                    }
                 }
             }
         }
@@ -209,6 +263,11 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
+        always {
+            echo 'Cleaning up docker...'
+            sh 'docker system prune -f || true'
+            sh 'docker logout'
+        }
     }
     options {
         buildDiscarder(
@@ -219,6 +278,5 @@ pipeline{
             )
         )
         timestamps()                    // Add timestamps to the console output
-        disableConcurrentBuilds()       // Prevent concurrent builds of this pipeline
     }
 }
