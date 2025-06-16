@@ -53,10 +53,10 @@ pipeline{
                     --ignore-unfixed --no-progress --skip-dirs .git --skip-dirs node_modules \
                     --skip-dirs target --skip-dirs .idea --skip-dirs .gradle --skip-dirs .mvn \
                     --skip-dirs .settings --skip-dirs .classpath --skip-dirs .project . > ${sca_dir}/trivy_sca.txt
-                    if [ -s ${sca_dir}/trivy_sca.txt ]; then
-                        echo 'Trivy found issues in the dependencies.'
-                    else
+                    if [ ! -s ${sca_dir}/trivy_sca.txt ]; then
                         echo 'Trivy found no issues in the dependencies.'
+                    else
+                        echo 'Trivy found issues in the dependencies.'
                     fi
                 """
             }
@@ -70,13 +70,12 @@ pipeline{
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.exclusions="**/*.java" \
-                            -Dsonar.projectName="test-MEL"
-                            if [ ! -f target/sonar/report-task.txt ]; then
+                            -Dsonar.projectName="test-MEL" > ${sast_dir}/sast_report.txt 2>&1
+                            if [ ! -s ${sast_dir}/sast_report.txt ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
                                 echo 'SonarQube found issues in the code.'
                             fi
-                            cp target/sonar/report-task.txt ${sast_dir}/sast_report.txt
                         """
                     }
                 }
@@ -99,7 +98,7 @@ pipeline{
                         find . -name Dockerfile -exec sh -c '
                             overall_status=0
                             for dockerfile; do
-                                filename=$(echo "$dockerfile" | sed "s|^\./||" | tr "/" "_")
+                                filename=$(echo "$dockerfile" | sed "s|^\\./||" | tr "/" "_")
                                 report="$lint_dir/${filename}_lint.txt"
                                 echo "Linting: $dockerfile"
                                 if ! docker run --rm -i hadolint/hadolint < "$dockerfile" > "$report" 2>&1; then
