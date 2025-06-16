@@ -74,8 +74,8 @@ pipeline{
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.exclusions="**/*.java" \
-                            -Dsonar.projectName="test-MEL" > ${sast_dir}/sast_report.json 2>&1
-                            if [ ! -s ${sast_dir}/sast_report.json ]; then
+                            -Dsonar.projectName="test-MEL" > ${sast_dir}/sonar_sast.json 2>&1
+                            if [ ! -s ${sast_dir}/sonar_sast.json ]; then
                                 echo 'SonarQube found no issues in the code.'
                             else
                                 echo 'SonarQube found issues in the code.'
@@ -169,22 +169,16 @@ pipeline{
         failure {
             echo 'Pipeline failed!'
         }
-        // always {
-        //     archiceArtifacts artifacts: 'reports/**/*.json',
-        //     allowEmptyArchive: true,
-        //     fingerprint: true,
-        //     followSymlinks: false
-        // }
     }
     options {
         buildDiscarder(
             logRotator(
                 artifactDaysToKeepStr: '30',        // Keep artifacts for 30 days
-                artifactNumToKeepStr: '10',      // Keep the last 10 artifacts
-                daysToKeepStr: '7',             // Keep logs for 7 days
+                artifactNumToKeepStr: '10',         // Keep the last 10 artifacts
+                daysToKeepStr: '7',                 // Keep logs for 7 days
             )
         )
-        timestamps()        // Add timestamps to the console output
+        timestamps()                    // Add timestamps to the console output
         disableConcurrentBuilds()       // Prevent concurrent builds of this pipeline
     }
 }
