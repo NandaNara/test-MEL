@@ -13,7 +13,6 @@ pipeline{
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
 
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
-        build_log_dir = "${build_dir}/build-log"            // build log dir
     }
     tools {
         maven 'maven'
@@ -30,8 +29,8 @@ pipeline{
                 echo 'Preparing workspace... '
                 sh """
                     mkdir -p ${reports_dir} ${code_dir} ${build_dir} ${test_dir}
-                    mkdir -p ${trufflehog_dir} ${sca_dir} ${sast_dir}
-                    mkdir -p ${vuln_dir} ${harden_dir}
+                    mkdir -p ${trufflehog_dir} ${sca_dir} ${sast_dir} ${lint_dir}
+                    mkdir -p ${img_scan_dir}
                 """
             }
         }
