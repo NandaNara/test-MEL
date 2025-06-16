@@ -91,29 +91,22 @@ pipeline{
         }
         stage('Dockerfile Lint - Hadolint') {
             steps {
-                echo 'Linting Dockerfile using Hadolint...'
+                // echo 'Linting Dockerfile using Hadolint...'
                 script {
-                    def dockerfiles = findFiles(glob: '**/Dockerfile')
-
-                    if (dockerfiles.isEmpty()) {
-                        error 'No Dockerfile found in the repository.'
-                    }
-
-                    dockerfiles.each { Df ->
-                        def dirPath = Df.path.replace('/Dockerfile', ' ')
-                        echo "Linting Dockerfile in directory: ${dirPath}"
-
-                        sh """
-                            docker run --rm -v \$(pwd)/${dirPath}:/workspace hadolint/hadolint:latest-debian \
-                            /workspace/Dockerfile > hadolint_report.txt
-                            if [ -s hadolint_report.txt ]; then
-                                echo 'Hadolint found issues in the Dockerfiles.'
-                                cat hadolint_report.txt
-                            else
-                                echo 'Hadolint found no issues in the Dockerfiles.'
-                            fi
-                        """
-                    }
+                    sh """
+                        find . -name Dockerfile -exec sh -c '
+                            overall_status=0
+                            for dockerfile; do
+                                filename=$(echo "$dockerfile" | sed "s|^\./||" | tr "/" "_")
+                                report="${lint_dir}/${filename}_lint.txt"
+                                echo "🔍 Linting: $dockerfile"
+                                if ! docker run --rm -i hadolint/hadolint < "$dockerfile" > "$report" 2>&1; then
+                                    overall_status=1
+                                fi
+                            done
+                            exit $overall_status
+                        ' sh {} +
+                    """
                 }
             }
         }
