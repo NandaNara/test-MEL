@@ -230,7 +230,7 @@ pipeline{
                         def images = env.BUILT_IMAGES.split(',')
                         sh """
                             echo "Logging in to DockerHub..."
-                            docker login -u ${env.DOCKERHUB_CREDS_USR} -p ${env.DOCKERHUB_CREDS_PSW}
+                            sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
                         """
                         def parallelPushes = [:]
                         images.each { image ->
