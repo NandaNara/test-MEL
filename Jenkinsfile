@@ -262,7 +262,7 @@ pipeline{
                 // }
                 sh """
                         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
-                        -J report.json > ${test_dir}/zap_mel_report.json
+                        -m 4g -r zap_mel_report.html > ${test_dir}/zap_mel_report.html
                     """
                 }
             }
@@ -273,6 +273,7 @@ pipeline{
             steps {
                 echo 'Archiving artifacts...'
                 archiveArtifacts artifacts: 'reports/**/*.json',
+                archiveArtifacts artifacts: 'reports/**/*.html',
                 allowEmptyArchive: true,
                 fingerprint: true,
                 followSymlinks: false
