@@ -136,6 +136,7 @@ pipeline{
                         sh '''
                             build_errors=0
                             export DOCKER_BUILDKIT=1
+                            image_name=""
                             rm -rf image_names.txt built_images.txt
 
                             # find all Dockerfiles then build them
