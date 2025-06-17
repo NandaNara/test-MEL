@@ -61,6 +61,7 @@ pipeline{
                     else
                         echo 'Trivy found issues in the dependencies.'
                     fi
+                    echo 'Trivy SCA scan completed.'
                 """
             }
         }
