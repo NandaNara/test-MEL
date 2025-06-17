@@ -259,7 +259,7 @@ pipeline{
                 script {
                     sh """
                         docker run -u root -v ${WORKSPACE}/${test_dir}:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                        -t https://mataelanglab.kangnara.my.id/ -m 10 -J zap_mel_report.json || true
+                        -t https://mataelanglab.kangnara.my.id/ -m 10 -J ${test_dir}/zap_mel_report.json || true
                         if [ ! -s ${test_dir}/zap_mel_report.json ]; then
                             echo 'ZAP found no issues in the application.'
                         else
