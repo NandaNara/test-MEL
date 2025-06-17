@@ -258,10 +258,12 @@ pipeline{
         stage('DAST - OWASP ZAProxy') {
             steps {
                 echo 'Running DAST scan using ZAP...'
-                sh '''
-                    docker run --rm zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                    -t https://mataelanglab.kangnara.my.id/ -J report.json > ${test_dir}/zap_report_mel.json
-                '''
+                docker.image('zaproxy/zap-stable:weekly').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk -e ZAP_TIMEOUT=60') {
+                    sh """
+                        zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
+                        -J report.json > ${test_dir}/zap_mel_report.json
+                    """
+                }
             }
         }
 
