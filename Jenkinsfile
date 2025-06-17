@@ -132,6 +132,7 @@ pipeline{
                 echo 'Building Image...'
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     script {
+                        sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
                         sh '''
                             build_errors=0
                             image_names=""
