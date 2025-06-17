@@ -11,7 +11,8 @@ pipeline{
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
         // build_log_dir = "${build_dir}/build-log"            // build log dir
-        DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+        // DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+        // DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
     }
     tools {
         maven 'maven'
@@ -132,7 +133,6 @@ pipeline{
                 echo 'Building Image...'
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     script {
-                        sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
                         sh '''
                             build_errors=0
                             image_names=""
@@ -144,24 +144,17 @@ pipeline{
                                     dir_path=$(dirname "$dockerfile")
                                     component=$(basename "$dir_path")
                                     image_name="mel/${component}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                                    cache_image="mel/${component}:cache"
+                                    # cache_image="mel/${component}:cache"
                                     echo "Building: $image_name"
 
                                     # pull cache image if exists from last build
-                                    docker pull "$cache_image" || true
+                                    # docker pull "$cache_image" || true
 
                                     # building each image
-                                    if (cd "$dir_path" && docker build \
-                                        --cache-from "$cache_image" \
-                                        --build-arg BUILDKIT_INLINE_CACHE=1 \
-                                        -t "$image_name" .) then
+                                    if (cd "$dir_path" && docker build -t "$image_name") then
                                         echo "Successfully built: $image_name"
 
-                                        # save cache image for next build
-                                        docker tag "$image_name" "$cache_image"
-                                        docker push "$cache_image" || echo "Cache push failed, but build succeeded"
-
-                                        # save iamge name for next stage
+                                        # save image name for next stage
                                         echo "$image_name" >> image_names.txt
                                     else
                                         echo "Failed to build: $image_name"
@@ -176,6 +169,15 @@ pipeline{
                             fi
                             exit 0
                         '''
+                        // sh '''
+                        //     if (cd "$dir_path" && docker build \
+                        //                 --cache-from "$cache_image" \
+                        //                 --build-arg BUILDKIT_INLINE_CACHE=1 \
+                        //                 -t "$image_name" .) then
+                        // # save cache image for next build
+                        //                  docker tag "$image_name" "$cache_image"
+                        //                  docker push "$cache_image" || echo "Cache push failed, but build succeeded"
+                        // '''
                     }
                 }
             }
