@@ -10,9 +10,7 @@ pipeline{
         sast_dir = "${code_dir}/sast-sonarqube"             // sonarqube report dir
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
-        // build_log_dir = "${build_dir}/build-log"            // build log dir
-        // DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
-        // DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
+        // build_log_dir = "${build_dir}/build-log"         // build log dir
     }
     tools {
         maven 'maven'
@@ -120,6 +118,11 @@ pipeline{
 
         // ======= BUILD STAGE =======
         stage('Dockerhub Login') {
+            environment {
+                DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+                DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS_USR}"
+                DOCKERHUB_CREDENTIALS_PSW = "${DOCKERHUB_CREDENTIALS_PSW}"
+            }
             steps {
                 echo 'Logging in to Dockerhub...'
                 sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
