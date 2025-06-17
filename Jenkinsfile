@@ -228,10 +228,10 @@ pipeline{
                 script {
                     if (env.BUILT_IMAGES) {
                         def images = env.BUILT_IMAGES.split(',')
-                        sh """
+                        sh '''
                             echo "Logging in to DockerHub..."
                             sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-                        """
+                        '''
                         def parallelPushes = [:]
                         images.each { image ->
                             def reg_image_name = image.replaceAll('[:/]', '_')
@@ -244,15 +244,13 @@ pipeline{
                                 }
                             }
                         }
+                        parallel parallelPushes
                     }
-                    parallel parallelPushes
                 }
             }
             post{
                 always {
-                    script {
-                        sh 'docker logout'
-                    }
+                    sh 'docker logout'
                 }
             }
         }
