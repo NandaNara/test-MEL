@@ -262,7 +262,7 @@ pipeline{
                 // }
                 sh """
                         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
-                        -m 4g -r zap_mel_report.html > ${test_dir}/zap_mel_report.html
+                        -m 10 -r zap_mel_report.html > ${test_dir}/zap_mel_report.html
                     """
                 }
             }
