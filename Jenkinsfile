@@ -140,20 +140,24 @@ pipeline{
                     def components = []
 
                     dockerfiles.each { dockerfile ->
-                        def dirPath = new File(dockerfile).getParent()
-                        def component = new File(dirPath).getName()
+                        def dirPath = sh(
+                            script: "dirname '${dockerfile}'", returnStdout: true
+                        ).trim()
+                        def component = sh(
+                            script: "basename '${dirPath}'", returnStdout: true
+                        ).trim()
                         components << component
                         parallelBuilds["build_${component}"] = {
                             catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                 dir(dirPath) {
                                     script {
-                                        def imageName = "mel/${component}:${env.BUILD_ID}"
+                                        def image_name = "mel/${component}:${env.BUILD_ID}"
                                         sh """
-                                            echo "Building: $imageName"
-                                            docker build -t "$imageName" .
+                                            echo "Building: $image_name"
+                                            docker build -t "$image_name" .
 
                                             # Simpan nama image ke file sementara
-                                            echo "$imageName" >> "${env.WORKSPACE}/image_names.txt"
+                                            echo "$image_name" >> "${env.WORKSPACE}/image_names.txt"
                                         """
                                     }
                                 }
@@ -174,8 +178,7 @@ pipeline{
                         sh 'rm -f image_names.txt || true'
                         // save built image for next stage
                         if (fileExists('built_images.txt')) {
-                            env.BUILT_IMAGES = readFile('built_images.txt').readLines().unique().join(',')
-                            // .trim().replace('\n', ',')
+                            env.BUILT_IMAGES = readFile('built_images.txt').trim().replace('\n', ',')
                             echo "Successfully built images: ${env.BUILT_IMAGES}"
                         }
                     }
@@ -192,10 +195,10 @@ pipeline{
 
                     // find all images then scan them
                     images.each { image ->
-                        def safeImageName = image.replaceAll('[:/]', '_')
-                        def reportFile = "${img_scan_dir}/trivy_${safeImageName}.json"
+                        def safe_image_name = image.replaceAll('[:/]', '_')
+                        def reportFile = "${img_scan_dir}/trivy_${safe_image_name}.json"
 
-                        scanReports["scan_${safeImageName}"] = {
+                        scanReports["scan_${safe_image_name}"] = {
                             catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                 sh """
                                     echo "Scanning image: ${image}"
