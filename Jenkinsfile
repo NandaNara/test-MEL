@@ -144,7 +144,7 @@ pipeline{
                                 for dockerfile; do
                                     dir_path=$(dirname "$dockerfile")
                                     component=$(basename "$dir_path")
-                                    image_name="mel/${component}:${BUILD_ID}"
+                                    image_name="mel/${component}:${BUILD_ID}-${GIT_COMMIT_SHORT}"
                                     echo "Building: $image_name"
 
                                     # building each image
