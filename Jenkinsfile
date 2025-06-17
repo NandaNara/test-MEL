@@ -151,7 +151,7 @@ pipeline{
                             catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                 dir(dirPath) {
                                     script {
-                                        def image_name = "mel/${component}:${env.BUILD_ID}"
+                                        def image_name = "${component}:${env.BUILD_ID}"
                                         sh """
                                             echo "Building: $image_name"
                                             docker build -t "$image_name" .
