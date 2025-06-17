@@ -165,7 +165,7 @@ pipeline{
 
                             # save images names which suscessfully built to env.properties
                             if [ -f image_names.txt ]; then
-                                cp image_names.txt built_images.txt
+                                mv image_names.txt built_images.txt
                             fi
                             exit 0
                         '''
@@ -197,7 +197,7 @@ pipeline{
             steps {
                 script {
                     echo 'Trivy scanning... '
-                    def images = env.BUILT_IMAGES.split(',')
+                    def images = env.BUILT_IMAGES
                     def scanReports = [:]
                     // sh 'mkdir -p "$img_scan_dir"'
 
