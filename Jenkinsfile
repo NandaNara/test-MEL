@@ -135,27 +135,23 @@ pipeline{
                     script {
                         sh '''
                             build_errors=0
-                            image_names=""
                             export DOCKER_BUILDKIT=1
+                            rm -rf image_names.txt built_images.txt
 
                             # find all Dockerfiles then build them
                             find . -name Dockerfile -exec sh -c '
                                 for dockerfile; do
                                     dir_path=$(dirname "$dockerfile")
                                     component=$(basename "$dir_path")
-                                    image_name="mel/${component}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                                    # cache_image="mel/${component}:cache"
+                                    image_name="mel/${component}:${BUILD_ID}"
                                     echo "Building: $image_name"
-
-                                    # pull cache image if exists from last build
-                                    # docker pull "$cache_image" || true
 
                                     # building each image
                                     if (cd "$dir_path" && docker build -t "$image_name") then
                                         echo "Successfully built: $image_name"
 
                                         # save image name for next stage
-                                        echo "$image_name" >> image_names.txt
+                                        echo "$image_name" > image_names.txt
                                     else
                                         echo "Failed to build: $image_name"
                                         build_errors=$((build_errors + 1))
@@ -165,7 +161,7 @@ pipeline{
 
                             # save images names which suscessfully built to env.properties
                             if [ -f image_names.txt ]; then
-                                mv image_names.txt built_images.txt
+                                sort -u image_names.txt > built_images.txt
                             fi
                             exit 0
                         '''
@@ -186,7 +182,8 @@ pipeline{
                     script {
                         // save built image for next stage
                         if (fileExists('built_images.txt')) {
-                            env.BUILT_IMAGES = readFile('built_images.txt').trim().replace('\n', ',')
+                            env.BUILT_IMAGES = readFile('built_images.txt').readLines().unique().join(',')
+                            // .trim().replace('\n', ',')
                             echo "Successfully built images: ${env.BUILT_IMAGES}"
                         }
                     }
@@ -197,14 +194,13 @@ pipeline{
             steps {
                 script {
                     echo 'Trivy scanning... '
-                    def images = env.BUILT_IMAGES
+                    def images = env.BUILT_IMAGES.split(',')
                     def scanReports = [:]
-                    // sh 'mkdir -p "$img_scan_dir"'
+                    sh 'mkdir -p "$img_scan_dir"'
 
                     // find all images then scan them
-                    for (int i = 0; i < images.size(); i++){
-                        def image = images[i].trim()
-                        def safeImageName = image.replaceAll('[:/]', '_')  // Buat nama file aman
+                    images.each { image ->
+                        def safeImageName = image.replaceAll('[:/]', '_')
                         def reportFile = "${img_scan_dir}/trivy_${safeImageName}.json"
 
                         scanReports["scan_${safeImageName}"] = {
