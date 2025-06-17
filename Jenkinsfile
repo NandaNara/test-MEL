@@ -131,91 +131,91 @@ pipeline{
             }
             steps {
                 echo 'Building Image...'
-                script {
-                    def dockerfiles = sh(
-                        script: 'find . -name Dockerfile',returnStdout: true
-                        ).trim().split('\n')
+                // script {
+                //     def dockerfiles = sh(
+                //         script: 'find . -name Dockerfile',returnStdout: true
+                //         ).trim().split('\n')
 
-                    def parallelBuilds = [:]
-                    def components = []
+                //     def parallelBuilds = [:]
+                //     def components = []
 
-                    dockerfiles.each { dockerfile ->
-                        def dirPath = sh(
-                            script: "dirname '${dockerfile}'", returnStdout: true
-                        ).trim()
-                        def component = sh(
-                            script: "basename '${dirPath}'", returnStdout: true
-                        ).trim()
-                        components << component
-                        parallelBuilds["build_${component}"] = {
-                            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                                dir(dirPath) {
-                                    script {
-                                        def image_name = "${component}:${env.BUILD_ID}"
-                                        sh """
-                                            echo "Building: $image_name"
-                                            docker build -t "$image_name" .
+                //     dockerfiles.each { dockerfile ->
+                //         def dirPath = sh(
+                //             script: "dirname '${dockerfile}'", returnStdout: true
+                //         ).trim()
+                //         def component = sh(
+                //             script: "basename '${dirPath}'", returnStdout: true
+                //         ).trim()
+                //         components << component
+                //         parallelBuilds["build_${component}"] = {
+                //             catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                //                 dir(dirPath) {
+                //                     script {
+                //                         def image_name = "${component}:${env.BUILD_ID}"
+                //                         sh """
+                //                             echo "Building: $image_name"
+                //                             docker build -t "$image_name" .
 
-                                            # Simpan nama image ke file sementara
-                                            echo "$image_name" >> "${env.WORKSPACE}/image_names.txt"
-                                        """
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    parallel parallelBuilds
-                    if (fileExists('image_names.txt')) {
-                        sh '''
-                            sort -u image_names.txt > built_images.txt
-                        '''
-                    }
-                }
+                //                             # Simpan nama image ke file sementara
+                //                             echo "$image_name" >> "${env.WORKSPACE}/image_names.txt"
+                //                         """
+                //                     }
+                //                 }
+                //             }
+                //         }
+                //     }
+                //     parallel parallelBuilds
+                //     if (fileExists('image_names.txt')) {
+                //         sh '''
+                //             sort -u image_names.txt > built_images.txt
+                //         '''
+                //     }
+                // }
             }
-            post {
-                always {
-                    script {
-                        sh 'rm -f image_names.txt || true'
-                        // save built image for next stage
-                        if (fileExists('built_images.txt')) {
-                            env.BUILT_IMAGES = readFile('built_images.txt').trim().replace('\n', ',')
-                            echo "Successfully built images: ${env.BUILT_IMAGES}"
-                        }
-                    }
-                }
-            }
+            // post {
+            //     always {
+            //         script {
+            //             sh 'rm -f image_names.txt || true'
+            //             // save built image for next stage
+            //             if (fileExists('built_images.txt')) {
+            //                 env.BUILT_IMAGES = readFile('built_images.txt').trim().replace('\n', ',')
+            //                 echo "Successfully built images: ${env.BUILT_IMAGES}"
+            //             }
+            //         }
+            //     }
+            // }
         }
         stage('Image Scan - Trivy') {
             steps {
                 script {
                     echo 'Trivy scanning... '
-                    def images = env.BUILT_IMAGES.split(',')
-                    def scanReports = [:]
-                    sh 'mkdir -p "$img_scan_dir"'
+                    // def images = env.BUILT_IMAGES.split(',')
+                    // def scanReports = [:]
+                    // sh 'mkdir -p "$img_scan_dir"'
 
-                    // find all images then scan them
-                    images.each { image ->
-                        def safe_image_name = image.replaceAll('[:/]', '_')
-                        def reportFile = "${img_scan_dir}/trivy_${safe_image_name}.json"
+                    // // find all images then scan them
+                    // images.each { image ->
+                    //     def safe_image_name = image.replaceAll('[:/]', '_')
+                    //     def reportFile = "${img_scan_dir}/trivy_${safe_image_name}.json"
 
-                        scanReports["scan_${safe_image_name}"] = {
-                            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                                sh """
-                                    echo "Scanning image: ${image}"
-                                    trivy image --exit-code 0 --severity CRITICAL,HIGH \
-                                    --security-checks config \
-                                    --scanners vuln,config,secret,license "${image}" \
-                                    -f json > "${reportFile}"
-                                    if [ ! -s "${reportFile}" ]; then
-                                        echo "Trivy found no issues in: ${image}"
-                                    else
-                                        echo "Trivy found issues in: ${image}"
-                                    fi
-                                """
-                            }
-                        }
-                        parallel scanReports
-                    }
+                    //     scanReports["scan_${safe_image_name}"] = {
+                    //         catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    //             sh """
+                    //                 echo "Scanning image: ${image}"
+                    //                 trivy image --exit-code 0 --severity CRITICAL,HIGH \
+                    //                 --security-checks config \
+                    //                 --scanners vuln,config,secret,license "${image}" \
+                    //                 -f json > "${reportFile}"
+                    //                 if [ ! -s "${reportFile}" ]; then
+                    //                     echo "Trivy found no issues in: ${image}"
+                    //                 else
+                    //                     echo "Trivy found issues in: ${image}"
+                    //                 fi
+                    //             """
+                    //         }
+                    //     }
+                    //     parallel scanReports
+                    // }
                 }
             }
         }
@@ -225,40 +225,43 @@ pipeline{
             }
             steps {
                 echo 'Pushing Image to Registry...'
-                script {
-                    if (env.BUILT_IMAGES) {
-                        def images = env.BUILT_IMAGES.split(',')
-                        echo "Logging in to DockerHub..."
-                        sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-                        echo "${env.DOCKERHUB_CREDENTIALS_USR} logged in successfully."
-                        def parallelPushes = [:]
-                        images.each { image ->
-                            def reg_image_name = image
-                            parallelPushes["push_${reg_image_name}"] = {
-                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                                    sh """
-                                        echo "Pushing image: ${reg_image_name}"
-                                        docker push "${reg_image_name}"
-                                    """
-                                }
-                            }
-                        }
-                        parallel parallelPushes
-                    }
-                }
+                // script {
+                //     if (env.BUILT_IMAGES) {
+                //         def images = env.BUILT_IMAGES.split(',')
+                //         echo "Logging in to DockerHub..."
+                //         sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+                //         echo "${env.DOCKERHUB_CREDENTIALS_USR} logged in successfully."
+                //         def parallelPushes = [:]
+                //         images.each { image ->
+                //             def reg_image_name = image
+                //             parallelPushes["push_${reg_image_name}"] = {
+                //                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                //                     sh """
+                //                         echo "Pushing image: ${reg_image_name}"
+                //                         docker push "${reg_image_name}"
+                //                     """
+                //                 }
+                //             }
+                //         }
+                //         parallel parallelPushes
+                //     }
+                // }
             }
-            post{
-                always {
-                    sh 'docker logout'
-                }
-            }
+            // post{
+            //     always {
+            //         sh 'docker logout'
+            //     }
+            // }
         }
 
         // ======= TEST STAGE =======
         stage('DAST - OWASP ZAProxy') {
             steps {
                 echo 'Running DAST scan using ZAP...'
-                // Add your DAST scan steps here
+                sh """
+                    docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable:2.16.1 zap-baseline.py \
+                    -t https://mataelanglab.kangnara.my.id/ -f json > ${test_dir}/zap_report_mel.json
+                """
             }
         }
 
