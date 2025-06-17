@@ -136,7 +136,7 @@ pipeline{
                         sh '''
                             build_errors=0
                             export DOCKER_BUILDKIT=1
-                            image_name=""
+                            image_names=""
                             rm -rf image_names.txt built_images.txt
 
                             # find all Dockerfiles then build them
@@ -144,7 +144,7 @@ pipeline{
                                 for dockerfile; do
                                     dir_path=$(dirname "$dockerfile")
                                     component=$(basename "$dir_path")
-                                    image_name="mel/${component}:${BUILD_ID}-${GIT_COMMIT_SHORT}"
+                                    image_name="mel/${component}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
                                     echo "Building: $image_name"
 
                                     # building each image
