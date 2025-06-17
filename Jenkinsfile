@@ -199,7 +199,7 @@ pipeline{
                     echo 'Trivy scanning... '
                     def images = env.BUILT_IMAGES.split(',')
                     def scanReports = [:]
-                    sh 'mkdir -p "$img_scan_dir"'
+                    // sh 'mkdir -p "$img_scan_dir"'
 
                     // find all images then scan them
                     for (int i = 0; i < images.size(); i++){
