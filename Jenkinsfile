@@ -220,9 +220,40 @@ pipeline{
             }
         }
         stage('Push Image to Registry') {
+            environment {
+                DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+            }
             steps {
                 echo 'Pushing Image to Registry...'
-                // Add your deployment steps here
+                script {
+                    if (env.BUILT_IMAGES) {
+                        def images = env.BUILT_IMAGES.split(',')
+                        sh """
+                            echo "Logging in to DockerHub..."
+                            docker login -u ${env.DOCKERHUB_CREDS_USR} -p ${env.DOCKERHUB_CREDS_PSW}
+                        """
+                        def parallelPushes = [:]
+                        images.each { image ->
+                            def reg_image_name = image.replaceAll('[:/]', '_')
+                            parallelPushes["push_${reg_image_name}"] = {
+                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                                    sh """
+                                        echo "Pushing image: ${reg_image_name}"
+                                        docker push "${reg_image_name}"
+                                    """
+                                }
+                            }
+                        }
+                    }
+                    parallel parallelPushes
+                }
+            }
+            post{
+                always {
+                    script {
+                        sh 'docker logout'
+                    }
+                }
             }
         }
 
