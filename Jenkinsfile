@@ -259,7 +259,7 @@ pipeline{
             steps {
                 echo 'Running DAST scan using ZAP...'
                 script {
-                    docker.image('zaproxy/zap-stable:weekly').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk -e ZAP_TIMEOUT=60') {
+                    docker.image('zaproxy/zap-stable:2.16.1').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk') {
                     sh """
                         zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
                         -J report.json > ${test_dir}/zap_mel_report.json
