@@ -237,7 +237,7 @@ pipeline{
                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                     sh """
                                         echo "Pushing image: ${reg_image_name}"
-                                        docker push "${reg_image_name}"
+                                        docker push "$DOCKERHUB_CREDENTIALS_USR/${reg_image_name}"
                                     """
                                 }
                             }
