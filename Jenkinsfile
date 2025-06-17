@@ -117,17 +117,6 @@ pipeline{
         }
 
         // ======= BUILD STAGE =======
-        stage('Dockerhub Login') {
-            environment {
-                DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
-                DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS_USR}"
-                DOCKERHUB_CREDENTIALS_PSW = "${DOCKERHUB_CREDENTIALS_PSW}"
-            }
-            steps {
-                echo 'Logging in to Dockerhub...'
-                sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-            }
-        }
         stage('Build Docker Image') {
             environment {
                 DOCKER_BUILDKIT = "1"
@@ -222,6 +211,17 @@ pipeline{
                 }
             }
         }
+        stage('Dockerhub Login') {
+            environment {
+                DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+                DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS_USR}"
+                DOCKERHUB_CREDENTIALS_PSW = "${DOCKERHUB_CREDENTIALS_PSW}"
+            }
+            steps {
+                echo 'Logging in to Dockerhub...'
+                sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+            }
+        }
         stage('Push Image to Registry') {
             environment {
                 DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
@@ -256,18 +256,18 @@ pipeline{
         stage('DAST - OWASP ZAProxy') {
             steps {
                 echo 'Running DAST scan using ZAP...'
-                // script {
-                //     sh """
-                //         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                //         -t https://mataelanglab.kangnara.my.id/ -m 10 -r zap_mel_report.html
-                //         exit 0
-                //         if [ ! -s zap_mel_report.html ]; then
-                //             echo 'ZAP found no issues in the application.'
-                //         else
-                //             echo 'ZAP found issues in the application.'
-                //         fi
-                //     """
-                // }
+                script {
+                    sh """
+                        docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
+                        -t https://mataelanglab.kangnara.my.id/ -m 10 -J zap_mel_report.json > ${test_dir}/zap_mel_report.json 2>&1
+                        exit 0
+                        if [ ! -s ${test_dir}/zap_mel_report.json ]; then
+                            echo 'ZAP found no issues in the application.'
+                        else
+                            echo 'ZAP found issues in the application.'
+                        fi
+                    """
+                }
             }
         }
 
@@ -275,7 +275,7 @@ pipeline{
         stage('Archieve Artifacts') {
             steps {
                 echo 'Archiving artifacts...'
-                archiveArtifacts artifacts: 'reports/**/*',
+                archiveArtifacts artifacts: 'reports/**/*.json',
                 allowEmptyArchive: true,
                 fingerprint: true,
                 followSymlinks: false
