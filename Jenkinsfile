@@ -254,12 +254,16 @@ pipeline{
             steps {
                 echo 'Running DAST scan using ZAP...'
                 script {
-                    docker.image('zaproxy/zap-stable:2.16.1').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk') {
-                    sh """
-                        zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
+                //     docker.image('zaproxy/zap-stable:2.16.1').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk') {
+                //     sh """
+                //         docker run -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
+                //         -J report.json > ${test_dir}/zap_mel_report.json
+                //     """
+                // }
+                sh """
+                        docker run -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
                         -J report.json > ${test_dir}/zap_mel_report.json
                     """
-                }
                 }
             }
         }
