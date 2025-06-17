@@ -118,7 +118,7 @@ pipeline{
             }
         }
 
-        ======= BUILD STAGE =======
+        // ======= BUILD STAGE =======
         stage('Dockerhub Login') {
             steps {
                 echo 'Logging in to Dockerhub...'
