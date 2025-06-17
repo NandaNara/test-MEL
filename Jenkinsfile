@@ -214,8 +214,8 @@ pipeline{
         stage('Dockerhub Login') {
             environment {
                 DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
-                DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS_USR}"
-                DOCKERHUB_CREDENTIALS_PSW = "${DOCKERHUB_CREDENTIALS_PSW}"
+                // DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS_USR}"
+                // DOCKERHUB_CREDENTIALS_PSW = "${DOCKERHUB_CREDENTIALS_PSW}"
             }
             steps {
                 echo 'Logging in to Dockerhub...'
@@ -259,7 +259,7 @@ pipeline{
                 script {
                     sh """
                         docker run -u root -v ${WORKSPACE}/${test_dir}:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                        -t https://mataelanglab.kangnara.my.id/ -m 10 -J ${test_dir}/zap_mel_report.json || true
+                        -t https://mataelanglab.kangnara.my.id/ -m 10 -J report.json > ${test_dir}/zap_mel_report.json || true
                         if [ ! -s ${test_dir}/zap_mel_report.json ]; then
                             echo 'ZAP found no issues in the application.'
                         else
