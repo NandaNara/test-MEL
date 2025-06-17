@@ -234,9 +234,6 @@ pipeline{
                         def parallelPushes = [:]
                         images.each { image ->
                             def reg_image_name = image
-                            if (image.startsWith('mel/')) {
-                                reg_image_name = image.replace('mel/', "${env.DOCKERHUB_CREDENTIALS_USR}/")
-                            }
                             parallelPushes["push_${reg_image_name}"] = {
                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                     sh """
