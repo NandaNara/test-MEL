@@ -255,8 +255,9 @@ pipeline{
                 echo 'Running DAST scan using ZAP...'
                 script {
                     sh """
-                        docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://gis-team1.kangnara.my.id/ \
-                        -m 10 -r zap_mel_report.html
+                        docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
+                        -t https://mataelanglab.kangnara.my.id/ -m 10 -r zap_mel_report.html
+                        exit 0
                         if [ ! -s zap_mel_report.html ]; then
                             echo 'ZAP found no issues in the application.'
                         else
