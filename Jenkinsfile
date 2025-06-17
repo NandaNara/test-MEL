@@ -272,8 +272,7 @@ pipeline{
         stage('Archieve Artifacts') {
             steps {
                 echo 'Archiving artifacts...'
-                archiveArtifacts artifacts: 'reports/**/*.json',
-                archiveArtifacts artifacts: 'reports/**/*.html',
+                archiveArtifacts artifacts: 'reports/**/*',
                 allowEmptyArchive: true,
                 fingerprint: true,
                 followSymlinks: false
