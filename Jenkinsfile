@@ -232,7 +232,7 @@ pipeline{
                         sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
                         def parallelPushes = [:]
                         images.each { image ->
-                            def reg_image_name = image.replaceAll('[:/]', '_')
+                            def reg_image_name = image
                             parallelPushes["push_${reg_image_name}"] = {
                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                     sh """
