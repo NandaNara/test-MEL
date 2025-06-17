@@ -253,13 +253,8 @@ pipeline{
         stage('DAST - OWASP ZAProxy') {
             steps {
                 echo 'Running DAST scan using ZAP...'
+                sh 'chmod 777 zap-reports'
                 script {
-                //     docker.image('zaproxy/zap-stable:2.16.1').inside('-v ${WORKSPACE}/zap-reports:/zap/wrk') {
-                //     sh """
-                //         docker run -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
-                //         -J report.json > ${test_dir}/zap_mel_report.json
-                //     """
-                // }
                 sh """
                         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
                         -m 10 -r zap_mel_report.html > ${test_dir}/zap_mel_report.html
