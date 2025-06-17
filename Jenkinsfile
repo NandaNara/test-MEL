@@ -228,10 +228,8 @@ pipeline{
                 script {
                     if (env.BUILT_IMAGES) {
                         def images = env.BUILT_IMAGES.split(',')
-                        sh '''
-                            echo "Logging in to DockerHub..."
-                            sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-                        '''
+                        echo "Logging in to DockerHub..."
+                        sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
                         def parallelPushes = [:]
                         images.each { image ->
                             def reg_image_name = image.replaceAll('[:/]', '_')
@@ -239,7 +237,7 @@ pipeline{
                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                     sh """
                                         echo "Pushing image: ${reg_image_name}"
-                                        docker push "nandanara/${reg_image_name}"
+                                        docker push "${reg_image_name}"
                                     """
                                 }
                             }
