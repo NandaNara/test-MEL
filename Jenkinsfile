@@ -230,6 +230,7 @@ pipeline{
                         def images = env.BUILT_IMAGES.split(',')
                         echo "Logging in to DockerHub..."
                         sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+                        echo "${env.DOCKERHUB_CREDENTIALS_USR} logged in successfully."
                         def parallelPushes = [:]
                         images.each { image ->
                             def reg_image_name = image
@@ -237,7 +238,7 @@ pipeline{
                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                                     sh """
                                         echo "Pushing image: ${reg_image_name}"
-                                        docker push "$DOCKERHUB_CREDENTIALS_USR/${reg_image_name}"
+                                        docker push "${reg_image_name}"
                                     """
                                 }
                             }
