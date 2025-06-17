@@ -13,8 +13,6 @@ pipeline{
         // build_log_dir = "${build_dir}/build-log"            // build log dir
         DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
         DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
-        DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
-        DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
     }
     tools {
         maven 'maven'
@@ -41,15 +39,15 @@ pipeline{
         stage('Secret Scan - TruffleHog') {
             steps {
                 echo 'Scanning secret using TruffleHog... '
-                // sh """
-                //     docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
-                //     --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.json
-                //     if [ ! -s ${trufflehog_dir}/trufflehog.json ]; then
-                //         echo 'TruffleHog found no secrets in the repository.'
-                //     else
-                //         echo 'TruffleHog found secrets in the repository.'
-                //     fi
-                // """
+                sh """
+                    docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github \
+                    --repo https://github.com/NandaNara/test-MEL > ${trufflehog_dir}/trufflehog.json
+                    if [ ! -s ${trufflehog_dir}/trufflehog.json ]; then
+                        echo 'TruffleHog found no secrets in the repository.'
+                    else
+                        echo 'TruffleHog found secrets in the repository.'
+                    fi
+                """
             }
         }
         stage('Dependency Scan (SCA) - Trivy') {
@@ -120,7 +118,7 @@ pipeline{
             }
         }
 
-        ======= BUILD STAGE =======
+        // ======= BUILD STAGE =======
         stage('Dockerhub Login') {
             steps {
                 echo 'Logging in to Dockerhub...'
@@ -255,18 +253,6 @@ pipeline{
         stage('DAST - OWASP ZAProxy') {
             steps {
                 echo 'Running DAST scan using ZAP...'
-                // script {
-                //     sh """
-                //         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                //         -t https://mataelanglab.kangnara.my.id/ -m 10 -r zap_mel_report.html
-                //         exit 0
-                //         if [ ! -s zap_mel_report.html ]; then
-                //             echo 'ZAP found no issues in the application.'
-                //         else
-                //             echo 'ZAP found issues in the application.'
-                //         fi
-                //     """
-                // }
                 // script {
                 //     sh """
                 //         docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py \
