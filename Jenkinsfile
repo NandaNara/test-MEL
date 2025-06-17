@@ -261,7 +261,7 @@ pipeline{
                 //     """
                 // }
                 sh """
-                        sudo docker run -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
+                        docker run -u root -v ${WORKSPACE}/zap-reports:/zap/wrk zaproxy/zap-stable:2.16.1 zap-baseline.py -t https://mataelanglab.kangnara.my.id/ \
                         -J report.json > ${test_dir}/zap_mel_report.json
                     """
                 }
