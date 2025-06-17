@@ -119,12 +119,12 @@ pipeline{
         // }
 
         // ======= BUILD STAGE =======
-        stage('Dockerhub Login') {
-            steps {
-                echo 'Logging in to Dockerhub...'
-                sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-            }
-        }
+        // stage('Dockerhub Login') {
+        //     steps {
+        //         echo 'Logging in to Dockerhub...'
+        //         sh 'echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+        //     }
+        // }
         stage('Build Docker Image') {
             environment {
                 DOCKER_BUILDKIT = "1"
