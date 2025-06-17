@@ -11,8 +11,8 @@ pipeline{
         lint_dir = "${code_dir}/hadolint"                   // hadolint report dir
         img_scan_dir = "${build_dir}/img-scan-trivy"        // iamge scan report dir
         // build_log_dir = "${build_dir}/build-log"            // build log dir
-        DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
-        DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
+        // DOCKERHUB_CREDENTIALS = credentials('test-MEL-dockerhub')
+        // DOCKERHUB_CREDENTIALS_USR = "${DOCKERHUB_CREDENTIALS.username}"
     }
     tools {
         maven 'maven'
