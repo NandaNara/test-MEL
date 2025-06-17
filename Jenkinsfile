@@ -133,54 +133,47 @@ pipeline{
                 echo 'Building Image...'
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                     script {
-                        sh '''
-                            build_errors=0
-                            export DOCKER_BUILDKIT=1
-                            image_names=""
-                            rm -rf image_names.txt built_images.txt
+                        def dockerfiles = sh(
+                            script: 'find . -name Dockerfile',returnStdout: true
+                        ).trim().split('\n')
 
-                            # find all Dockerfiles then build them
-                            find . -name Dockerfile -exec sh -c '
-                                for dockerfile; do
-                                    dir_path=$(dirname "$dockerfile")
-                                    component=$(basename "$dir_path")
-                                    image_name="mel/${component}:${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                                    echo "Building: $image_name"
+                        def parallelBuilds = [:]
+                        def components = []
 
-                                    # building each image
-                                    if (cd "$dir_path" && docker build -t "$image_name") then
-                                        echo "Successfully built: $image_name"
+                        dockerfiles.each { dockerfile ->
+                            def dirPath = new File(dockerfile).getParent()
+                            def component = new File(dirPath).getName()
+                            components << component
+                            parallelBuilds["build_${component}"] = {
+                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                                    dir(dirPath) {
+                                        script {
+                                            def imageName = "mel/${component}:${env.BUILD_ID}"
+                                            sh """
+                                                echo "Building: $imageName"
+                                                docker build -t "$imageName" .
 
-                                        # save image name for next stage
-                                        echo "$image_name" > image_names.txt
-                                    else
-                                        echo "Failed to build: $image_name"
-                                        build_errors=$((build_errors + 1))
-                                    fi
-                                done
-                            ' sh {} +
-
-                            # save images names which suscessfully built to env.properties
-                            if [ -f image_names.txt ]; then
+                                                # Simpan nama image ke file sementara
+                                                echo "$imageName" >> "${env.WORKSPACE}/image_names.txt"
+                                            """
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        parallel parallelBuilds
+                        if (fileExists('image_names.txt')) {
+                            sh '''
                                 sort -u image_names.txt > built_images.txt
-                            fi
-                            exit 0
-                        '''
-                        // sh '''
-                        //     if (cd "$dir_path" && docker build \
-                        //                 --cache-from "$cache_image" \
-                        //                 --build-arg BUILDKIT_INLINE_CACHE=1 \
-                        //                 -t "$image_name" .) then
-                        // # save cache image for next build
-                        //                  docker tag "$image_name" "$cache_image"
-                        //                  docker push "$cache_image" || echo "Cache push failed, but build succeeded"
-                        // '''
+                            '''
+                        }
                     }
                 }
             }
             post {
                 always {
                     script {
+                        sh 'rm -f image_names.txt || true'
                         // save built image for next stage
                         if (fileExists('built_images.txt')) {
                             env.BUILT_IMAGES = readFile('built_images.txt').readLines().unique().join(',')
@@ -195,7 +188,7 @@ pipeline{
             steps {
                 script {
                     echo 'Trivy scanning... '
-                    def images = env.BUILT_IMAGES
+                    def images = env.BUILT_IMAGES.split(',')
                     def scanReports = [:]
                     sh 'mkdir -p "$img_scan_dir"'
 
@@ -213,7 +206,7 @@ pipeline{
                                     --scanners vuln,config,secret,license "${image}" \
                                     -f json > "${reportFile}"
                                     if [ ! -s "${reportFile}" ]; then
-                                        echo "✅ Trivy found no issues in: ${image}"
+                                        echo "Trivy found no issues in: ${image}"
                                     else
                                         echo "Trivy found issues in: ${image}"
                                     fi
