@@ -259,8 +259,8 @@ pipeline{
             steps {
                 echo 'Running DAST scan using ZAP...'
                 sh '''
-                    docker run -v $(pwd):/zap/wrk/:rw zaproxy/zap-stable:2.16.1 zap-baseline.py \
-                    -t https://mataelanglab.kangnara.my.id/ > ${test_dir}/zap_report_mel.json
+                    docker run --rm zaproxy/zap-stable:2.16.1 zap-baseline.py \
+                    -t https://mataelanglab.kangnara.my.id/ -J report.json > ${test_dir}/zap_report_mel.json
                 '''
             }
         }
