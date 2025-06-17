@@ -131,42 +131,40 @@ pipeline{
             }
             steps {
                 echo 'Building Image...'
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    script {
-                        def dockerfiles = sh(
-                            script: 'find . -name Dockerfile',returnStdout: true
+                script {
+                    def dockerfiles = sh(
+                        script: 'find . -name Dockerfile',returnStdout: true
                         ).trim().split('\n')
 
-                        def parallelBuilds = [:]
-                        def components = []
+                    def parallelBuilds = [:]
+                    def components = []
 
-                        dockerfiles.each { dockerfile ->
-                            def dirPath = new File(dockerfile).getParent()
-                            def component = new File(dirPath).getName()
-                            components << component
-                            parallelBuilds["build_${component}"] = {
-                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                                    dir(dirPath) {
-                                        script {
-                                            def imageName = "mel/${component}:${env.BUILD_ID}"
-                                            sh """
-                                                echo "Building: $imageName"
-                                                docker build -t "$imageName" .
+                    dockerfiles.each { dockerfile ->
+                        def dirPath = new File(dockerfile).getParent()
+                        def component = new File(dirPath).getName()
+                        components << component
+                        parallelBuilds["build_${component}"] = {
+                            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                                dir(dirPath) {
+                                    script {
+                                        def imageName = "mel/${component}:${env.BUILD_ID}"
+                                        sh """
+                                            echo "Building: $imageName"
+                                            docker build -t "$imageName" .
 
-                                                # Simpan nama image ke file sementara
-                                                echo "$imageName" >> "${env.WORKSPACE}/image_names.txt"
-                                            """
-                                        }
+                                            # Simpan nama image ke file sementara
+                                            echo "$imageName" >> "${env.WORKSPACE}/image_names.txt"
+                                        """
                                     }
                                 }
                             }
                         }
-                        parallel parallelBuilds
-                        if (fileExists('image_names.txt')) {
-                            sh '''
-                                sort -u image_names.txt > built_images.txt
-                            '''
-                        }
+                    }
+                    parallel parallelBuilds
+                    if (fileExists('image_names.txt')) {
+                        sh '''
+                            sort -u image_names.txt > built_images.txt
+                        '''
                     }
                 }
             }
