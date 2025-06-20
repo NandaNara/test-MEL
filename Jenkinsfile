@@ -123,6 +123,7 @@ pipeline{
             }
             steps {
                 echo 'Building Image...'
+                echo 'membuat image '
                 script {
                     def dockerfiles = sh(
                         script: 'find . -name Dockerfile',returnStdout: true
