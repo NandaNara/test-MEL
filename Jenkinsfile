@@ -228,27 +228,27 @@ pipeline{
             }
             steps {
                 echo 'Pushing Image to Registry...'
-                script {
-                    if (env.BUILT_IMAGES) {
-                        def images = env.BUILT_IMAGES.split(',')
-                        echo "Logging in to DockerHub..."
-                        sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
-                        echo "${env.DOCKERHUB_CREDENTIALS_USR} logged in successfully."
-                        def parallelPushes = [:]
-                        images.each { image ->
-                            def reg_image_name = image
-                            parallelPushes["push_${reg_image_name}"] = {
-                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                                    sh """
-                                        echo "Pushing image: ${reg_image_name}"
-                                        docker push "${reg_image_name}"
-                                    """
-                                }
-                            }
-                        }
-                        parallel parallelPushes
-                    }
-                }
+                // script {
+                //     if (env.BUILT_IMAGES) {
+                //         def images = env.BUILT_IMAGES.split(',')
+                //         echo "Logging in to DockerHub..."
+                //         sh ' echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin'
+                //         echo "${env.DOCKERHUB_CREDENTIALS_USR} logged in successfully."
+                //         def parallelPushes = [:]
+                //         images.each { image ->
+                //             def reg_image_name = image
+                //             parallelPushes["push_${reg_image_name}"] = {
+                //                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                //                     sh """
+                //                         echo "Pushing image: ${reg_image_name}"
+                //                         docker push "${reg_image_name}"
+                //                     """
+                //                 }
+                //             }
+                //         }
+                //         parallel parallelPushes
+                //     }
+                // }
             }
         }
 
