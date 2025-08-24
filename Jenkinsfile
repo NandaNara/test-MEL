@@ -229,7 +229,7 @@ pipeline{
             }
             steps {
                 echo 'Pushing Image to Registry...'
-                echo 'Testing new sonarqube configuration'
+                echo 'Testing new SonarQube configuration'
                 // script {
                 //     if (env.BUILT_IMAGES) {
                 //         def images = env.BUILT_IMAGES.split(',')
