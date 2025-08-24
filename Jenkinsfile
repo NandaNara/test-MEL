@@ -16,6 +16,9 @@ pipeline{
         maven 'maven'
     }
     stages {
+        stage('SCM') {
+            checkout scm
+        }
         stage('Clean Old Artifacts') {
             steps {
                 echo 'Cleaning old artifacts... '
